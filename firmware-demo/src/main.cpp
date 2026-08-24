@@ -10,7 +10,7 @@ const char *WIFI_SSID = "Wokwi-GUEST";
 const char *WIFI_PASSWORD = "";
 
 // Broker MQTT công cộng, dùng để demo, không cần cài server riêng.
-const char *MQTT_BROKER = "test.mosquitto.org";
+const char *MQTT_BROKER = "broker.hivemq.com";
 const int MQTT_PORT = 1883;
 const char *MQTT_CLIENT_ID = "panda-demo-khoa";
 const char *TOPIC_RESULT = "panda/demo/khoa/result";

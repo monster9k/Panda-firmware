@@ -1,0 +1,18 @@
+# PlatformIO build artifacts
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Editor
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Claude Code personal overrides (not for the team)
+.claude/settings.local.json
+
+# Logs
+*.log
