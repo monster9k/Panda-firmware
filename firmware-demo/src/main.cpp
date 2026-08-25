@@ -16,7 +16,7 @@ const char *MQTT_CLIENT_ID = "panda-demo-khoa";
 const char *TOPIC_RESULT = "panda/demo/khoa/result";
 const char *TOPIC_PROGRESS = "panda/demo/khoa/progress";
 
-const char *DEMO_WORD = "konnichiwa";
+const char *DEMO_WORD = "hello";
 
 const int PIN_BTN_CORRECT = 25;
 const int PIN_BTN_WRONG = 26;

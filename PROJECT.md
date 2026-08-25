@@ -4,6 +4,21 @@
 
 Vai trò được phân công: **Firmware nhúng & AI**. Thực tế mạnh về web/app, gần như chưa có nền tảng nhúng. Deadline: **demo nhỏ phần nhúng trên máy tính** (không cần board thật) vào **thứ Sáu 28/08/2026** để giảng viên hướng dẫn thấy được đang tự học và đóng góp cho nhóm.
 
+## Quyết định thu hẹp phạm vi (2026-08-25)
+
+Đề xuất PBL4 ban đầu của nhóm hướng tới robot học **tiếng Nhật hai chiều** (nhận diện giọng nói Việt→Nhật và Nhật→Việt). Nhóm đã quyết định **thu hẹp thành dạy tiếng Anh một chiều cho trẻ em** (robot phát âm mẫu tiếng Anh, trẻ lặp lại, chấm đúng/sai — không dịch thuật, không hội thoại hai chiều).
+
+**Lý do nhóm đưa ra:** bạn phụ trách AI trong nhóm cho rằng việc dựng nhận diện giọng nói hai chiều Việt-Nhật/Nhật-Việt quá khó vì phải tải model về và tự chỉnh sửa, vượt quá khả năng hiện tại.
+
+**Đánh giá kỹ thuật (để nhóm hiểu rõ bản chất quyết định, tránh ghi sai lý do trong báo cáo):**
+
+- Nhận định trên **đúng một phần, sai một phần** — vấn đề nằm ở *cách tiếp cận đã chọn*, không phải ở việc "tiếng Nhật không làm được".
+- Nếu dùng đúng kiến trúc mà chính sơ đồ đề xuất của nhóm vẽ ra — gọi **API STT/TTS cloud có sẵn** (Google Speech-to-Text, Whisper API, Azure/Google TTS) — thì tiếng Nhật là ngôn ngữ được hỗ trợ sẵn, chỉ cần đổi tham số `language_code` sang `ja-JP`, **không cần tải model về hay chỉnh sửa gì cả**. Độ khó ở bước này gần như ngang tiếng Anh.
+- Cái thực sự khó — và đúng là khó thật với người mới học AI trong vài tuần — là khi cần **tự host model mã nguồn mở** (Whisper chạy local, wav2vec2, VITS...) để tránh chi phí API, hoặc muốn **fine-tune** model cho phát âm trẻ em/giọng vùng miền, hoặc xây bộ **kiểm tra ngữ pháp N5-N4 + hội thoại hai chiều thật sự** như sơ đồ AI pipeline mô tả (không chỉ so khớp từ đơn). Đây là bài toán NLP/ML nâng cao, việc một thành viên chưa có nền tảng ML thấy quá sức trong thời gian một đồ án học phần là hợp lý, không phải do thiếu cố gắng.
+- Kết luận: quyết định thu hẹp phạm vi là **lựa chọn đúng đắn xét theo ràng buộc thời gian và kỹ năng hiện có của nhóm**, nhưng nên ghi trong báo cáo là "thu hẹp để đảm bảo chất lượng và tiến độ" thay vì "nhận diện giọng nói tiếng Nhật không khả thi" — vì điều đó không chính xác về mặt kỹ thuật và có thể bị giảng viên phản biện.
+
+**Tác động tới phần việc firmware:** bỏ hẳn hạng mục hiển thị **chữ Hán/Kana** trên OLED (đây là phần khó nhất, cần custom bitmap font vì Adafruit_GFX không hỗ trợ sẵn) — OLED giờ chỉ cần hiển thị từ vựng tiếng Anh bằng font ASCII có sẵn, đơn giản hơn nhiều. Timeline Tuần 5 bên dưới đã được cập nhật lại cho phù hợp.
+
 ## Tài liệu tham khảo đã chọn
 
 1. [Espressif Arduino-ESP32 – Getting Started](https://docs.espressif.com/projects/arduino-esp32/en/latest/getting_started.html) — tài liệu chuẩn cho lập trình ESP32 bằng Arduino framework (GPIO, I2C, WiFi, PWM).
@@ -68,8 +83,8 @@ Giả định cuối kỳ rơi vào khoảng cuối tháng 11/2026 (~3 tháng k�
 |---|---|---|---|
 | 2 | 24/08–30/08 | Demo nhỏ: ESP32 mô phỏng (Wokwi) + OLED + 2 nút bấm + MQTT publish + web dashboard (xem chi tiết ở mục Kế hoạch theo ngày). | Video demo luồng ESP32→MQTT→Web + 2 tài liệu tham khảo đã đọc. |
 | 3 | 31/08–06/09 | Học I2S/thu âm cơ bản (mô phỏng); tách code firmware thành các module rõ ràng (wifi/mqtt, display, input); làm MQTT reconnect logic bền hơn (không chỉ demo 1 lần). | Cấu trúc firmware mới + giải thích tại sao tách module. |
-| 4 | 07/09–13/09 | Firmware **subscribe** lệnh/kết quả từ server (không chỉ publish một chiều); phối hợp với Thái để nhận kết quả fuzzy matching qua MQTT và hiển thị lên OLED. | Demo 2 chiều: server gửi lệnh → ESP32 phản ứng. |
-| 5 | 14/09–20/09 | Hiển thị nhiều biểu cảm mắt (vui/buồn/ngạc nhiên) + chữ Hán/Kana thật trên OLED (cần custom bitmap font vì Adafruit_GFX không có sẵn font tiếng Nhật — đây là phần khó, nên bắt đầu sớm). | OLED hiển thị đúng Kana/Kanji mẫu + đủ 3 biểu cảm. |
+| 4 | 07/09–13/09 | Firmware **subscribe** lệnh/kết quả từ server (không chỉ publish một chiều); phối hợp với Thái để nhận kết quả fuzzy matching (từ vựng tiếng Anh) qua MQTT và hiển thị lên OLED. | Demo 2 chiều: server gửi lệnh → ESP32 phản ứng. |
+| 5 | 14/09–20/09 | Hiển thị nhiều biểu cảm mắt (vui/buồn/ngạc nhiên) + từ vựng tiếng Anh trên OLED bằng font ASCII có sẵn của Adafruit_GFX (không cần custom bitmap font nữa sau khi thu hẹp phạm vi sang tiếng Anh — xem "Quyết định thu hẹp phạm vi" ở trên). Tận dụng thời gian dư ra để làm sớm layout hiển thị hình ảnh minh họa đơn giản (icon/emoji dạng bitmap) đi kèm từ vựng. | OLED hiển thị đúng từ vựng tiếng Anh + icon minh họa + đủ 3 biểu cảm. |
 | 6 | 21/09–27/09 | Né vật cản bằng cảm biến siêu âm HC-SR04 (mô phỏng); **kiểm thử tích hợp toàn hệ thống đầu-cuối** — đây là mốc báo cáo giữa kỳ theo kế hoạch gốc của nhóm. | **Báo cáo tiến độ giữa kỳ**: demo toàn bộ luồng đã làm từ Tuần 2–6. |
 | 7 | 28/09–04/10 | Học điều khiển động cơ DC qua L298N + PWM; code phản hồi chuyển động (xoay vòng khi đúng, lắc khi sai). | Demo motor phản hồi theo kết quả đúng/sai. |
 | 8 | 05/10–11/10 | Tích hợp điều khiển di chuyển bằng lệnh giọng nói cơ bản (server gửi lệnh "tiến"/"dừng" qua MQTT → ESP32 điều khiển motor). | Demo điều khiển di chuyển bằng lệnh MQTT giả lập giọng nói. |

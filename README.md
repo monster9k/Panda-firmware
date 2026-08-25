@@ -1,6 +1,8 @@
-# PANDA – Robot đồng hành thông minh hỗ trợ học tiếng Nhật
+# PANDA – Robot đồng hành thông minh hỗ trợ trẻ em học tiếng Anh
 
-Robot để bàn dùng giọng nói làm kênh tương tác chính, giúp sinh viên luyện nghe – nói từ vựng và mẫu câu tiếng Nhật. Robot phát âm mẫu (TTS), nhận diện và chấm câu trả lời của người học (STT + fuzzy matching), phản hồi bằng chuyển động, biểu cảm khuôn mặt và chữ Hán/Kana trên màn hình OLED. Dữ liệu tương tác truyền qua MQTT trên nền tảng IoT và lưu trên server để sinh viên theo dõi tiến độ học tập qua giao diện web.
+Robot để bàn dùng giọng nói làm kênh tương tác chính, giúp trẻ em làm quen và luyện nghe – nói từ vựng tiếng Anh. Robot phát âm mẫu (TTS), nhận diện và chấm câu trả lời của trẻ (STT + fuzzy matching), phản hồi bằng chuyển động, biểu cảm khuôn mặt và từ vựng/hình ảnh minh họa tiếng Anh trên màn hình OLED. Robot còn nhận lệnh di chuyển bằng giọng nói tiếng Anh/Việt cơ bản ("Go", "Stop", "tiến lên", "dừng lại") để tương tác vận động cùng trẻ, và né vật cản bằng cảm biến siêu âm. Dữ liệu tương tác truyền qua MQTT trên nền tảng IoT và lưu trên server để phụ huynh/sinh viên theo dõi tiến độ học tập qua giao diện web.
+
+> Lưu ý phạm vi: đề xuất ban đầu của nhóm hướng tới học tiếng Nhật hai chiều (Việt↔Nhật). Nhóm đã thu hẹp phạm vi thành dạy tiếng Anh một chiều cho trẻ em — lý do và phân tích kỹ thuật xem mục "Quyết định thu hẹp phạm vi" trong [PROJECT.md](PROJECT.md).
 
 ## Thành viên nhóm
 

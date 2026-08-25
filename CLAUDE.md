@@ -4,7 +4,9 @@ Guidance for Claude Code when working in this repository.
 
 ## Project
 
-PANDA is a PBL4 student project: a desk robot that helps students practice Japanese vocabulary via voice (TTS/STT), shows expressive eyes and Kana/Kanji on an OLED, and reports progress via MQTT to a cloud server with a web dashboard. Full proposal context: see `README.md` and the team's PBL4 proposal PDF.
+PANDA is a PBL4 student project: a desk robot that helps children practice English vocabulary via voice (TTS/STT), shows expressive eyes and English words/pictures on an OLED, and reports progress via MQTT to a cloud server with a web dashboard. Full proposal context: see `README.md` and the team's PBL4 proposal PDF.
+
+**Scope note:** the team's original proposal targeted two-way Vietnamese↔Japanese vocabulary practice. The team narrowed this to one-way English vocabulary practice for children after the AI teammate found building/customizing bidirectional Vietnamese↔Japanese speech models infeasible on the timeline. See the "Quyết định thu hẹp phạm vi" section in `PROJECT.md` for the rationale. When in doubt about target language or scope, treat English-only as current — don't reintroduce Japanese-specific work (e.g. Kana/Kanji OLED fonts) unless the user says the scope changed again.
 
 ## Author context — read this before editing embedded code
 
