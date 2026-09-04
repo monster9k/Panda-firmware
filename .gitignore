@@ -16,3 +16,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Personal learning tracker (not for the team)
+learningprocess.md
+
+# Weekly technical notes: logic/diagrams/explanations per week (not for the team)
+WEEKLY_LOGIC.md
+
+# AI teammate's own project — has its own .git repo, keep it out of this one entirely
+# (Git would otherwise treat it as an embedded/nested repo, not real tracked content —
+# see ai.md for a summary of what it contains).
+Panda-Robotics-Client-/

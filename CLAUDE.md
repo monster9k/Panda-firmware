@@ -8,6 +8,10 @@ PANDA is a PBL4 student project: a desk robot that helps children practice Engli
 
 **Scope note:** the team's original proposal targeted two-way Vietnamese↔Japanese vocabulary practice. The team narrowed this to one-way English vocabulary practice for children after the AI teammate found building/customizing bidirectional Vietnamese↔Japanese speech models infeasible on the timeline. See the "Quyết định thu hẹp phạm vi" section in `PROJECT.md` for the rationale. When in doubt about target language or scope, treat English-only as current — don't reintroduce Japanese-specific work (e.g. Kana/Kanji OLED fonts) unless the user says the scope changed again.
 
+**Known discrepancy (2026-09-03):** the AI teammate's actual code in `Panda-Robotics-Client-/` (summarized in `ai.md`) implements a much broader system than the narrowed scope above — a free-form Vietnamese conversational assistant (wake-word, LLM chat across 24 topics, face/emotion recognition), not just one-way English vocabulary drilling. This is a factual observation from reading that code, not a re-decision of scope — don't silently treat either document as more authoritative than the other; if scope comes up, surface this mismatch rather than picking a side.
+
+**Cross-project reference:** `Panda-Robotics-Client-/` (the AI teammate's Python/Node backend + dashboard, plus a reference `panda_firmware.ino` Arduino sketch) lives alongside `firmware-demo/` in this repo. Read `ai.md` before touching MQTT topics, OLED expression names/eye coordinates, or GPIO pin choices in `firmware-demo/` — it documents the MQTT contract (`panda/cmd/*`, `panda/status`, `panda/ai/*`) and the shared OLED expression set (`neutral/happy/sad/angry/surprised/sleepy/wink/love/cool/cute/dizzy/questioning/thinking/speaking`) that `firmware-demo/src/display.*` was deliberately ported from, to stay compatible for future integration.
+
 ## Author context — read this before editing embedded code
 
 The primary author working in this repo, Khoa, owns the "Firmware nhúng" (embedded firmware) role on the team but has strong web/app background and near-zero prior embedded experience. He is self-teaching under a tight deadline.
@@ -20,15 +24,18 @@ The primary author working in this repo, Khoa, owns the "Firmware nhúng" (embed
 
 - **Firmware**: C/C++, Arduino framework for ESP32, built with **PlatformIO** (not Arduino IDE).
 - **Simulation**: **Wokwi** (no physical hardware available yet) — `wokwi.toml` + `diagram.json` per demo folder.
-- **MQTT**: `PubSubClient` library on the firmware side; public broker `test.mosquitto.org` for demos/prototyping (not for the real product — the real system uses a self-hosted Mosquitto broker per the proposal).
+- **MQTT**: `PubSubClient` library on the firmware side; public broker `broker.hivemq.com` for demos/prototyping (switched from `test.mosquitto.org` in Week 2 after `rc=-2` TCP-connect failures — see `WEEKLY_LOGIC.md`, not pushed to git). Not for the real product — the real system uses a self-hosted Mosquitto broker per the proposal, and a different topic namespace (see `ai.md`).
 - **OLED**: `Adafruit_SSD1306` + `Adafruit_GFX`, I2C.
 - **Web dashboard demos**: plain HTML/JS + `mqtt.js` (CDN) subscribing over MQTT-over-WebSocket. No build step.
 
 ## Repo layout
 
-- `firmware-demo/` — self-contained PlatformIO project for a given demo milestone. Each demo should stay runnable purely in Wokwi (no physical board required) until the team has real hardware.
+- `firmware-demo/` — self-contained PlatformIO project for a given demo milestone. Each demo should stay runnable purely in Wokwi (no physical board required) until the team has real hardware. `src/` is split into modules (`main.cpp`, `pins.h`, `display.*`, `input.*`, `network.*`, `audio_i2s.*`) rather than one file — see `WEEKLY_LOGIC.md` for why.
 - `firmware-demo/web-dashboard/` — companion static HTML page(s) that subscribe to the same MQTT topics the firmware publishes, for visualizing results without a full backend.
 - `PROJECT.md` — Khoa's running plan/log for the firmware track (day-by-day tasks, checklists, learnings). Update it as tasks complete rather than creating new planning docs.
+- `ai.md` — summary of the AI teammate's `Panda-Robotics-Client-/` project (MQTT contract, OLED expression reference, integration caveats). Tracked in git (unlike `PROJECT.md`'s companion personal-log files below) since it documents another teammate's work for the whole team.
+- `Panda-Robotics-Client-/` — the AI teammate's own project (Python voice/vision/LLM backend + Node dashboard + a reference `panda_firmware.ino`). Not Khoa's to restructure; treat as read-only reference unless the user explicitly asks to change it.
+- `learningprocess.md`, `WEEKLY_LOGIC.md` — Khoa's personal learning tracker and technical notes-by-week. Both gitignored (not for the team). Never suggest committing them.
 
 ## Conventions
 
