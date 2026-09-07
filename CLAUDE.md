@@ -42,3 +42,18 @@ The primary author working in this repo, Khoa, owns the "Firmware nhúng" (embed
 - MQTT topics for demos follow `panda/demo/<member>/<subject>` (e.g. `panda/demo/khoa/result`, `panda/demo/khoa/progress`) so they don't collide with topics other teammates use, and so the naming pattern is easy to carry over to the real product's topic scheme later.
 - Prefer PlatformIO (`pio run`, `pio run --target upload`) over the Arduino IDE for anything committed to this repo.
 - Don't add abstractions (state machines, config files, OTA, etc.) beyond what a given demo milestone needs — scope is intentionally minimal given the deadline-driven, learning-focused nature of this track.
+
+## Git — two separate repos, don't conflate them (2026-09-08)
+
+This working directory (`MOON`) and `Panda-Robotics-Client-/` are **two independent git repositories** (the latter has its own nested `.git` and is gitignored by the former — see `.gitignore` line ~29). Full explanation for humans lives in `gitrule.md` (gitignored, local-only, not pushed anywhere) — read that file for the complete picture before doing any git operation that spans both repos.
+
+- **`MOON` (`origin` = `monster9k/Panda-firmware`)** — Khoa's personal repo. Commit/push here as usual for day-to-day work (`firmware-demo/`, planning docs, etc.) — no special rule, this is his own sandbox/backup.
+- **`Panda-Robotics-Client-/` (`origin` = `Thainguyen2103/Panda-Robotics-Client-`)** — the team's shared repo. Khoa has push access here now. Team git rule (from Thái, 2026-09-08):
+  1. `git checkout develop && git pull origin develop`
+  2. `git checkout -b feature/<ten>-<task>` (e.g. `feature/khoa-w3-i2s-module`)
+  3. Commit normally while working.
+  4. `git push origin feature/<ten>-<task>` — **never push directly to `main` or `develop`**; `main` is branch-protected (push blocked).
+  5. Open a Pull Request into `develop` on GitHub (not `main`).
+- Khoa's firmware code lives at `Panda-Robotics-Client-/firmware/kt_firmware/` (named for the "Kỹ thuật/embedded" pair, not just Khoa — a second embedded teammate shares this same folder; parallel to the AI teammate's reference `firmware/panda_firmware/`) — copied over from `MOON/firmware-demo/` (git-tracked files only, `.pio/` build artifacts excluded) each time there's a finished chunk of work to share, not on every small commit. It carries its own scoped `README.md`; **no other `.md` file from `MOON`** (`PROJECT.md`, `ai.md`, `CLAUDE.md`, `MOON/README.md`, or the gitignored `WEEKLY_LOGIC.md`/`learningprocess.md`) gets copied into the team repo.
+- **Commits pushed to `Panda-Robotics-Client-` must NOT carry a `Co-Authored-By: Claude` trailer** (explicit user instruction — this repo is visible to teammates/instructor, unlike personal projects). This overrides the default attribution instruction for this specific remote only; commits to `MOON`'s own `origin` keep the default attribution unless told otherwise.
+- Second embedded teammate: **one person, one branch** (decided 2026-09-08, kept simple since this is just a school project) — they clone `Panda-Robotics-Client-`, branch off `develop` with their own `feature/<ten>-...`, work inside the same `firmware/kt_firmware/` folder, and open their own PR into `develop`. No shared/pair-programming branch. See `gitrule.md` for the fuller onboarding explanation.

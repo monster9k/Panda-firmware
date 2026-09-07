@@ -23,6 +23,9 @@ learningprocess.md
 # Weekly technical notes: logic/diagrams/explanations per week (not for the team)
 WEEKLY_LOGIC.md
 
+# Personal git-workflow cheat sheet (explains both repos + team rule) — local only
+gitrule.md
+
 # AI teammate's own project — has its own .git repo, keep it out of this one entirely
 # (Git would otherwise treat it as an embedded/nested repo, not real tracked content —
 # see ai.md for a summary of what it contains).
