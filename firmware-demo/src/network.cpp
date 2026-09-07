@@ -43,6 +43,14 @@ void networkSetup()
 {
   mqtt.setServer(MQTT_BROKER, MQTT_PORT);
 
+  // PubSubClient mặc định chờ tối đa 15 GIÂY cho mỗi thao tác mạng (kết nối TCP, bắt tay
+  // MQTT) trước khi coi là thất bại — và trong lúc chờ đó, mqtt.connect() KHÔNG TRẢ VỀ,
+  // nghĩa là cả loop() (kể cả inputPoll() đọc nút) bị đứng hình theo. 15s là con số hợp lý
+  // cho thiết bị IoT bình thường, nhưng quá dài cho 1 nút bấm cần phản hồi ngay. Giảm
+  // xuống 3s để nếu broker.hivemq.com phản hồi chậm (broker công cộng, qua cổng Internet
+  // ảo của Wokwi), thời gian "đứng hình" tối đa chỉ còn 3s thay vì 15s.
+  mqtt.setSocketTimeout(3);
+
   // Lần đầu tiên vẫn chờ WiFi (blocking): trước khi có mạng thì chưa có việc gì khác để
   // làm nên chặn ở đây không sao. Có giới hạn thời gian (15s) để log rõ ràng thay vì
   // treo vô thời hạn nếu WiFi ảo Wokwi gặp sự cố — sau 15s vẫn để networkLoop() tự thử lại.
