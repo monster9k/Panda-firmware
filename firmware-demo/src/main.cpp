@@ -121,6 +121,13 @@ void setup()
 
   Serial.println("[main] San sang. Nut XANH = dung, nut DO = sai.");
   Serial.println("[main] De yen ~6s robot se tu dien lan luot cac bieu cam.");
+
+  // In lượng RAM trống còn lại sau khi mọi thứ đã khởi tạo xong (khung đệm màn hình 62KB,
+  // WiFi, MQTT...). Nếu con số này tụt xuống dưới ~40KB thì cần lo: các thao tác mạng sau
+  // đó có thể xin thêm bộ nhớ không được và sinh lỗi khó hiểu.
+  Serial.print("[main] RAM trong con lai: ");
+  Serial.print(ESP.getFreeHeap());
+  Serial.println(" byte");
 }
 
 void loop()
@@ -149,4 +156,20 @@ void loop()
   handleIdleFaces();
   displayLoop();
   audioI2sLoop();
+
+  // NHƯỜNG CPU cho hệ điều hành — 1 dòng nhỏ nhưng quan trọng.
+  //
+  // Từ khi đổi sang màn SPI, không còn chỗ nào trong loop() "nghỉ" nữa: bản OLED cũ vô
+  // tình an toàn vì hàm gửi I2C chờ bằng semaphore (lúc chờ là task tự ngủ, CPU được
+  // nhường cho việc khác), còn hàm gửi SPI chờ bằng vòng lặp đọc thanh ghi liên tục,
+  // không nhường gì cả. Các hàm còn lại đều return ngay. Kết quả: task chính quay
+  // 100% CPU không ngừng nghỉ, khiến (1) máy tính phải mô phỏng một con CPU lúc nào cũng
+  // bận tối đa nên nóng và quạt kêu to, (2) các task nền của hệ thống (WiFi, TCP/IP) bị
+  // chèn ép, dễ sinh lỗi lạ.
+  //
+  // delay(1) KHÁC HẲN delay() dài đã học ở Bước 10: nó không phải "chờ cho hết giờ" mà là
+  // báo cho hệ điều hành "tôi xong việc rồi, ai cần CPU thì dùng đi" — và 1ms là đúng 1
+  // nhịp tick của FreeRTOS, tức mức nhường nhỏ nhất có thể. Vòng lặp vẫn chạy ~1000
+  // lần/giây, thừa sức bắt kịp nút bấm (debounce 200ms) và khung hình (30ms).
+  delay(1);
 }
