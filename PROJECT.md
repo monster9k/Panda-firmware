@@ -19,6 +19,8 @@ Vai trò được phân công: **Firmware nhúng & AI**. Thực tế mạnh về
 
 **Tác động tới phần việc firmware:** bỏ hẳn hạng mục hiển thị **chữ Hán/Kana** trên OLED (đây là phần khó nhất, cần custom bitmap font vì Adafruit_GFX không hỗ trợ sẵn) — OLED giờ chỉ cần hiển thị từ vựng tiếng Anh bằng font ASCII có sẵn, đơn giản hơn nhiều. Timeline Tuần 5 bên dưới đã được cập nhật lại cho phù hợp.
 
+> **⚠️ Cập nhật cần lưu ý (03/09/2026)**: sau khi đọc code AI thật của nhóm trong `Panda-Robotics-Client-/` (tóm tắt ở `ai.md`), thấy bạn phụ trách AI đã build một trợ lý hội thoại tiếng Việt đầy đủ (wake-word, LLM trả lời tự do 24 chủ đề, nhận diện khuôn mặt/cảm xúc) — **rộng hơn nhiều** so với "tiếng Anh một chiều" đã ghi ở trên. Đây là quan sát từ code, chưa phải quyết định lại của nhóm — xem `ai.md` mục 8 để biết chi tiết, cần trao đổi lại với nhóm xem có cập nhật lại phần "Quyết định thu hẹp phạm vi" này không.
+
 ## Tài liệu tham khảo đã chọn
 
 1. [Espressif Arduino-ESP32 – Getting Started](https://docs.espressif.com/projects/arduino-esp32/en/latest/getting_started.html) — tài liệu chuẩn cho lập trình ESP32 bằng Arduino framework (GPIO, I2C, WiFi, PWM).
@@ -53,23 +55,31 @@ Vai trò được phân công: **Firmware nhúng & AI**. Thực tế mạnh về
 
 ## Kế hoạch theo ngày
 
-- [ ] **T2 24/08**: Đọc 2 tài liệu tham khảo. Cài VS Code + PlatformIO + Wokwi extension. Chạy thử ví dụ "Blink" trên Wokwi để quen quy trình build → mô phỏng.
-- [ ] **T3 25/08**: Học GPIO input (đọc nút bấm, debounce) + I2C OLED cơ bản. Dựng `diagram.json` Wokwi gồm ESP32 + OLED + 2 nút. Code hiển thị mắt vui/buồn theo nút bấm (chưa cần MQTT).
-- [ ] **T4 26/08**: Học WiFi + MQTT trên ESP32 (PubSubClient). Kết nối WiFi ảo `Wokwi-GUEST`, publish thử 1 message lên `test.mosquitto.org`, xác nhận bằng MQTT Explorer hoặc `mosquitto_sub`.
-- [ ] **T5 27/08**: Ghép toàn luồng: nút bấm → cập nhật OLED → publish MQTT kèm bộ đếm đúng/sai. Hoàn thiện `web-dashboard/index.html`.
-- [ ] **T6 28/08 (sáng)**: Kiểm thử end-to-end, quay video ngắn demo, hoàn thiện mục "Đã học được gì" bên dưới để báo cáo thầy.
+- [x] **T2 24/08**: Đọc 2 tài liệu tham khảo. Cài VS Code + PlatformIO + Wokwi extension. Chạy thử ví dụ "Blink" trên Wokwi để quen quy trình build → mô phỏng.
+- [x] **T3 25/08**: Học GPIO input (đọc nút bấm, debounce) + I2C OLED cơ bản. Dựng `diagram.json` Wokwi gồm ESP32 + OLED + 2 nút. Code hiển thị mắt vui/buồn theo nút bấm (chưa cần MQTT).
+- [x] **T4 26/08**: Học WiFi + MQTT trên ESP32 (PubSubClient). Kết nối WiFi ảo `Wokwi-GUEST`, publish thử 1 message lên broker (đổi sang `broker.hivemq.com` — xem ghi chú rc=-2 bên dưới).
+- [x] **T5 27/08**: Ghép toàn luồng: nút bấm → cập nhật OLED → publish MQTT kèm bộ đếm đúng/sai. Hoàn thiện `web-dashboard/index.html`.
+- [~] **T6 28/08 (sáng)**: Kiểm thử end-to-end xong (xem checklist dưới). **Còn thiếu: quay video ngắn demo** — việc quay màn hình là thao tác thủ công, cần tự làm khi mở Wokwi lên chạy lại.
 
 ## Checklist kiểm thử demo
 
-- [ ] `pio run` build sạch, không lỗi.
-- [ ] OLED hiển thị đúng trạng thái mắt khi bấm từng nút trong Wokwi.
-- [ ] Serial monitor log MQTT connect + publish thành công.
-- [ ] `web-dashboard/index.html` nhận message realtime và cập nhật đúng/sai khi bấm nút trong Wokwi.
-- [ ] Quay lại 1 video ngắn ~1-2 phút cho buổi báo cáo.
+- [x] `pio run` build sạch, không lỗi — xác nhận lại ngày 03/09/2026 (RAM 13.8%, Flash 59.4%, SUCCESS).
+- [x] OLED hiển thị đúng trạng thái mắt khi bấm từng nút trong Wokwi.
+- [x] Serial monitor log MQTT connect + publish thành công.
+- [x] `web-dashboard/index.html` nhận message realtime và cập nhật đúng/sai khi bấm nút trong Wokwi.
+- [ ] Quay lại 1 video ngắn ~1-2 phút cho buổi báo cáo. — **việc còn lại duy nhất của Tuần 2**, không thể tự động hoá, cần tự quay khi chạy Wokwi.
+
+> 4 mục đầu được xác nhận dựa trên: build vừa chạy lại thành công trong phiên này, và ghi chú trong `learningprocess.md`/lịch sử code (broker đổi sang `broker.hivemq.com` sau khi gặp lỗi `rc=-2`) cho thấy toàn luồng OLED → MQTT → dashboard đã chạy thật trên Wokwi trước đó. Claude không tự mở được trình mô phỏng Wokwi (không có `wokwi-cli`/token) nên không re-run trực tiếp — nếu muốn chắc chắn 100%, mở lại Wokwi và xem qua 1 lượt trước khi quay video.
 
 ## Đã học được gì (cập nhật dần trong tuần)
 
-- _(điền sau khi hoàn thành từng ngày — ví dụ: cách cấu hình `platformio.ini`, cách WiFi ảo Wokwi-GUEST hoạt động, cách publish JSON qua PubSubClient, v.v.)_
+- **`platformio.ini`**: `lib_deps` khai báo thư viện theo cú pháp `tác_giả/Tên Thư Viện @ ^phiên_bản` — PlatformIO tự tải từ registry, không cần cài thủ công như Arduino IDE.
+- **WiFi ảo `Wokwi-GUEST`**: Wokwi cấp sẵn 1 mạng WiFi mô phỏng có Internet thật (không mật khẩu), nên `WiFi.begin()` + vòng `while (WiFi.status() != WL_CONNECTED)` hoạt động y hệt code cho board thật — không cần đổi gì khi có phần cứng.
+- **`INPUT_PULLUP` đảo logic**: chân nút bấm nối xuống GND, khi không bấm chân được kéo lên HIGH nhờ điện trở pull-up nội bộ của ESP32; bấm nút = nối chân xuống GND = đọc được LOW. Vì vậy "bấm" tương ứng giá trị LOW chứ không phải HIGH.
+- **Edge detection**: so sánh trạng thái đọc hiện tại với trạng thái đọc lần trước (`lastState`) để chỉ xử lý đúng 1 lần mỗi lượt bấm, tránh xử lý lặp lại liên tục khi giữ nút.
+- **Debug MQTT `rc=-2`**: mã lỗi này của PubSubClient nghĩa là **kết nối TCP thất bại** (network-level), không phải sai thông tin đăng nhập/topic. Gặp lỗi này khi dùng `test.mosquitto.org` qua Wokwi (nghi do broker công khai bị quá tải/chặn từ gateway Wokwi) — khắc phục bằng cách đổi sang broker công khai khác (`broker.hivemq.com`, cổng 1883 cho firmware / 8000 cho WebSocket dashboard).
+- **`mqtt.loop()` phải gọi liên tục trong `loop()`**: đây là hàm xử lý nền của PubSubClient (giữ kết nối, nhận message) — không gọi thì kết nối MQTT âm thầm bị treo dù code không báo lỗi ngay.
+- Chi tiết đầy đủ hơn (kèm sơ đồ luồng) đã chuyển sang `WEEKLY_LOGIC.md` (không push git) để không làm phình file kế hoạch này.
 
 ---
 
@@ -79,22 +89,24 @@ Giả định cuối kỳ rơi vào khoảng cuối tháng 11/2026 (~3 tháng k�
 
 Đánh số tuần tiếp nối đúng theo mốc "Tuần 2" mà nhóm đã thống nhất trong đề xuất PBL4 (Tuần 2 = 24/08–30/08).
 
+> **Chia việc 2 người phần nhúng (từ Tuần 4, 08/09/2026):** Thắng (vai trò "Vi điều khiển & Báo cáo") chính thức làm chung phần firmware từ tuần này. Quy tắc đọc bảng dưới: **không có tag = mặc định Khoa làm**; tag `-Thắng` = phần đó Thắng làm; tag `-Khoa & Thắng` = làm chung/phối hợp. Chi tiết đầy đủ về cách chia (theo board HEAD/BODY), quy ước đặt tên module để tránh đụng file, và cách 2 người cùng sửa `main.cpp` mà không giẫm chân nhau — xem [PHANCONG.md](PHANCONG.md).
+
 | Tuần | Thời gian | Nội dung chính (Firmware nhúng) | Báo cáo thầy tuần này |
 |---|---|---|---|
-| 2 | 24/08–30/08 | Demo nhỏ: ESP32 mô phỏng (Wokwi) + OLED + 2 nút bấm + MQTT publish + web dashboard (xem chi tiết ở mục Kế hoạch theo ngày). | Video demo luồng ESP32→MQTT→Web + 2 tài liệu tham khảo đã đọc. |
-| 3 | 31/08–06/09 | Học I2S/thu âm cơ bản (mô phỏng); tách code firmware thành các module rõ ràng (wifi/mqtt, display, input); làm MQTT reconnect logic bền hơn (không chỉ demo 1 lần). | Cấu trúc firmware mới + giải thích tại sao tách module. |
-| 4 | 07/09–13/09 | Firmware **subscribe** lệnh/kết quả từ server (không chỉ publish một chiều); phối hợp với Thái để nhận kết quả fuzzy matching (từ vựng tiếng Anh) qua MQTT và hiển thị lên OLED. | Demo 2 chiều: server gửi lệnh → ESP32 phản ứng. |
-| 5 | 14/09–20/09 | Hiển thị nhiều biểu cảm mắt (vui/buồn/ngạc nhiên) + từ vựng tiếng Anh trên OLED bằng font ASCII có sẵn của Adafruit_GFX (không cần custom bitmap font nữa sau khi thu hẹp phạm vi sang tiếng Anh — xem "Quyết định thu hẹp phạm vi" ở trên). Tận dụng thời gian dư ra để làm sớm layout hiển thị hình ảnh minh họa đơn giản (icon/emoji dạng bitmap) đi kèm từ vựng. | OLED hiển thị đúng từ vựng tiếng Anh + icon minh họa + đủ 3 biểu cảm. |
-| 6 | 21/09–27/09 | Né vật cản bằng cảm biến siêu âm HC-SR04 (mô phỏng); **kiểm thử tích hợp toàn hệ thống đầu-cuối** — đây là mốc báo cáo giữa kỳ theo kế hoạch gốc của nhóm. | **Báo cáo tiến độ giữa kỳ**: demo toàn bộ luồng đã làm từ Tuần 2–6. |
-| 7 | 28/09–04/10 | Học điều khiển động cơ DC qua L298N + PWM; code phản hồi chuyển động (xoay vòng khi đúng, lắc khi sai). | Demo motor phản hồi theo kết quả đúng/sai. |
-| 8 | 05/10–11/10 | Tích hợp điều khiển di chuyển bằng lệnh giọng nói cơ bản (server gửi lệnh "tiến"/"dừng" qua MQTT → ESP32 điều khiển motor). | Demo điều khiển di chuyển bằng lệnh MQTT giả lập giọng nói. |
-| 9 | 12/10–18/10 | Nếu nhóm đã có phần cứng thật: chuyển từ Wokwi sang board thật, lắp ráp, hiệu chỉnh motor/cảm biến thật. Nếu chưa có: tiếp tục hoàn thiện mô phỏng + viết tài liệu chuẩn bị chuyển sang thật. | Ảnh/video phần cứng thật (nếu có) hoặc báo cáo rủi ro nếu chưa có board. |
-| 10 | 19/10–25/10 | Làm cứng cáp firmware: xử lý mất WiFi/MQTT giữa chừng, watchdog, xử lý lỗi cảm biến/OLED; dọn code + comment lại. | So sánh trước/sau khi thêm xử lý lỗi (demo ngắt mạng giữa chừng vẫn tự hồi phục). |
-| 11 | 26/10–01/11 | Tích hợp end-to-end với AI/Server thật của nhóm (STT/TTS/fuzzy matching thật thay cho nút bấm giả lập) — phối hợp chặt với Thái. | Demo học từ vựng thật bằng giọng nói (không còn nút bấm giả). |
-| 12 | 02/11–08/11 | Kiểm thử toàn diện: edge case (mất mạng, dữ liệu sai định dạng, cảm biến nhiễu); sửa lỗi phát sinh. | Danh sách bug đã tìm thấy + đã sửa. |
-| 13 | 09/11–15/11 | **Code freeze**: hoàn thiện tính năng cuối cùng, không thêm tính năng mới sau tuần này. | Xác nhận firmware đã hoàn chỉnh, sẵn sàng cho 2 tuần đệm. |
-| 14 | 16/11–22/11 | *(Tuần đệm 1 — không code tính năng mới)* Viết tài liệu kỹ thuật phần firmware, quay video demo đầy đủ, chuẩn bị slide báo cáo. | Bản nháp tài liệu + video demo đầy đủ. |
-| 15 | 23/11–29/11 | *(Tuần đệm 2 — dự phòng)* Fix bug phát sinh cuối cùng, tổng duyệt báo cáo, chuẩn bị bảo vệ đồ án. | Báo cáo/bảo vệ cuối kỳ. |
+| 2 | 24/08–30/08 | Demo nhỏ: ESP32 mô phỏng (Wokwi) + OLED + 2 nút bấm + MQTT publish + web dashboard (xem chi tiết ở mục Kế hoạch theo ngày). *(Trước khi Thắng tham gia — Khoa làm một mình.)* | Video demo luồng ESP32→MQTT→Web + 2 tài liệu tham khảo đã đọc. |
+| 3 | 31/08–06/09 | Học I2S/thu âm cơ bản (mô phỏng); tách code firmware thành các module rõ ràng (wifi/mqtt, display, input); làm MQTT reconnect logic bền hơn (không chỉ demo 1 lần). **Bổ sung giữa tuần (03/09)**: đọc code AI của nhóm trong `Panda-Robotics-Client-/` (tóm tắt ở `ai.md`), phát hiện bạn AI đã có sẵn firmware mẫu vẽ 11 biểu cảm OLED bằng Adafruit_GFX/SSD1306 — port trực tiếp thành 14 biểu cảm (`neutral/happy/sad/angry/surprised/sleepy/wink/love/cool/cute/dizzy/questioning/thinking/speaking`) vào `display.h/.cpp`, làm luôn trong tuần này thay vì để tới Tuần 5. *(Trước khi Thắng tham gia — Khoa làm một mình.)* | Cấu trúc firmware mới + giải thích tại sao tách module + demo 14 biểu cảm OLED qua lệnh Serial `face <ten>`. |
+| 4 | 07/09–13/09 | Firmware **subscribe** lệnh/kết quả từ server (không chỉ publish một chiều); phối hợp với Thái (AI) để nhận kết quả fuzzy matching (từ vựng tiếng Anh) qua MQTT và hiển thị lên OLED. Song song: tìm hiểu điều khiển động cơ DC (L298N/TB6612FNG) qua PWM + cảm biến HC-SR04 trong Wokwi, chuẩn bị cho Tuần 6–7 -Thắng. | Demo 2 chiều: server gửi lệnh → ESP32 phản ứng. |
+| 5 | 14/09–20/09 | ~~Hiển thị nhiều biểu cảm mắt~~ (đã làm sớm ở Tuần 3, xem trên) — tuần này dồn hết vào hiển thị từ vựng tiếng Anh trên OLED bằng font ASCII có sẵn của Adafruit_GFX (không cần custom bitmap font sau khi thu hẹp phạm vi sang tiếng Anh — xem "Quyết định thu hẹp phạm vi" ở trên) + layout hiển thị hình ảnh minh họa đơn giản (icon/emoji dạng bitmap) đi kèm từ vựng. Song song: dựng thêm buzzer + 2 nút bấm BODY vào `diagram.json`, viết khung module `motor.h/.cpp` (chưa cần chạy thật) -Thắng. | OLED hiển thị đúng từ vựng tiếng Anh + icon minh họa, phối hợp bố cục với 14 biểu cảm đã có. |
+| 6 | 21/09–27/09 | Né vật cản bằng cảm biến siêu âm HC-SR04 (mô phỏng) -Thắng; **kiểm thử tích hợp toàn hệ thống đầu-cuối** -Khoa & Thắng — đây là mốc báo cáo giữa kỳ theo kế hoạch gốc của nhóm. | **Báo cáo tiến độ giữa kỳ**: demo toàn bộ luồng đã làm từ Tuần 2–6. |
+| 7 | 28/09–04/10 | Học điều khiển động cơ DC qua L298N/TB6612FNG + PWM; code phản hồi chuyển động (xoay vòng khi đúng, lắc khi sai) -Thắng. | Demo motor phản hồi theo kết quả đúng/sai. |
+| 8 | 05/10–11/10 | Tích hợp điều khiển di chuyển bằng lệnh giọng nói cơ bản (server gửi lệnh "tiến"/"dừng" qua MQTT → ESP32 điều khiển motor) — dùng lại module `network` Khoa đã xây để nhận lệnh, Thắng viết phần xử lý motor tương ứng -Khoa & Thắng. | Demo điều khiển di chuyển bằng lệnh MQTT giả lập giọng nói. |
+| 9 | 12/10–18/10 | Nếu nhóm đã có phần cứng thật: chuyển từ Wokwi sang board thật, lắp ráp, hiệu chỉnh — Khoa phụ trách board HEAD (OLED, mic, MQTT), Thắng phụ trách board BODY (motor, cảm biến, buzzer) -Khoa & Thắng. Nếu chưa có: tiếp tục hoàn thiện mô phỏng + viết tài liệu chuẩn bị chuyển sang thật. | Ảnh/video phần cứng thật (nếu có) hoặc báo cáo rủi ro nếu chưa có board. |
+| 10 | 19/10–25/10 | Làm cứng cáp firmware: Khoa xử lý mất WiFi/MQTT giữa chừng, watchdog, lỗi OLED; Thắng xử lý lỗi cảm biến siêu âm/động cơ kẹt -Khoa & Thắng. Mỗi người tự dọn code + comment lại phần mình. | So sánh trước/sau khi thêm xử lý lỗi (demo ngắt mạng giữa chừng vẫn tự hồi phục). |
+| 11 | 26/10–01/11 | Tích hợp end-to-end với AI/Server thật của nhóm (STT/TTS/fuzzy matching thật thay cho nút bấm giả lập) — phối hợp chặt với Thái (AI). Thắng hỗ trợ kiểm thử phản hồi động cơ theo kết quả AI thật -Khoa & Thắng. | Demo học từ vựng thật bằng giọng nói (không còn nút bấm giả). |
+| 12 | 02/11–08/11 | Kiểm thử toàn diện: edge case (mất mạng, dữ liệu sai định dạng, cảm biến nhiễu); mỗi người tự kiểm thử phần mình rồi tổng hợp bug chung -Khoa & Thắng. | Danh sách bug đã tìm thấy + đã sửa. |
+| 13 | 09/11–15/11 | **Code freeze**: hoàn thiện tính năng cuối cùng, không thêm tính năng mới sau tuần này -Khoa & Thắng. | Xác nhận firmware đã hoàn chỉnh, sẵn sàng cho 2 tuần đệm. |
+| 14 | 16/11–22/11 | *(Tuần đệm 1 — không code tính năng mới)* Thắng chủ trì viết tài liệu kỹ thuật phần firmware + quay video demo đầy đủ + chuẩn bị slide báo cáo -Thắng (chủ trì, đúng vai trò "Báo cáo"). Khoa hỗ trợ viết tài liệu kỹ thuật cho module mình phụ trách -Khoa. | Bản nháp tài liệu + video demo đầy đủ. |
+| 15 | 23/11–29/11 | *(Tuần đệm 2 — dự phòng)* Mỗi người fix bug phát sinh cuối cùng ở phần mình; Thắng chủ trì tổng duyệt báo cáo, chuẩn bị bảo vệ đồ án -Khoa & Thắng. | Báo cáo/bảo vệ cuối kỳ. |
 
 Checklist nhanh mỗi tuần (lặp lại):
 - [ ] Đầu tuần: đọc lại dòng tương ứng trong bảng trên, xác nhận mục tiêu tuần.

@@ -30,6 +30,13 @@
       "top": 120,
       "left": 280,
       "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btnFace",
+      "top": 120,
+      "left": 380,
+      "attrs": { "color": "blue" }
     }
   ],
   "connections": [
@@ -42,6 +49,8 @@
     ["btnCorrect:1.l", "esp:D25", "green", []],
     ["btnCorrect:2.l", "esp:GND.2", "black", []],
     ["btnWrong:1.l", "esp:D26", "green", []],
-    ["btnWrong:2.l", "esp:GND.3", "black", []]
+    ["btnWrong:2.l", "esp:GND.3", "black", []],
+    ["btnFace:1.l", "esp:D27", "blue", []],
+    ["btnFace:2.l", "esp:GND.1", "black", []]
   ]
 }
