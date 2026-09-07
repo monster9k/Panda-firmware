@@ -38,8 +38,8 @@ Vai trò được phân công: **Firmware nhúng & AI**. Thực tế mạnh về
 ## Kiến trúc demo
 
 ```
-[Wokwi: ESP32 + OLED SSD1306 + 2 nút bấm (Đúng/Sai)]
-        |  I2C (OLED)         |  GPIO (buttons)
+[Wokwi: ESP32 + TFT ILI9341 2.4" + 2 nút bấm (Đúng/Sai)]
+        |  SPI 40MHz (TFT)    |  GPIO (buttons)
         v                     v
    main.cpp (PlatformIO, C++)
         | WiFi ảo Wokwi-GUEST -> Internet
@@ -51,7 +51,7 @@ Vai trò được phân công: **Firmware nhúng & AI**. Thực tế mạnh về
         -> hiển thị realtime: từ đang học, đúng/sai, tổng điểm
 ```
 
-Đây là bản thu nhỏ đúng luồng ESP32 → MQTT → Web trong đề xuất PBL4, thay STT/AI thật bằng 2 nút bấm mô phỏng kết quả chấm đúng/sai. Thể hiện 3 kỹ năng lõi của vai trò firmware: GPIO, I2C/OLED, WiFi+MQTT.
+Đây là bản thu nhỏ đúng luồng ESP32 → MQTT → Web trong đề xuất PBL4, thay STT/AI thật bằng 2 nút bấm mô phỏng kết quả chấm đúng/sai. Thể hiện 3 kỹ năng lõi của vai trò firmware: GPIO, SPI/màn hình, WiFi+MQTT.
 
 ## Kế hoạch theo ngày
 
@@ -95,8 +95,8 @@ Giả định cuối kỳ rơi vào khoảng cuối tháng 11/2026 (~3 tháng k�
 |---|---|---|---|
 | 2 | 24/08–30/08 | Demo nhỏ: ESP32 mô phỏng (Wokwi) + OLED + 2 nút bấm + MQTT publish + web dashboard (xem chi tiết ở mục Kế hoạch theo ngày). *(Trước khi Thắng tham gia — Khoa làm một mình.)* | Video demo luồng ESP32→MQTT→Web + 2 tài liệu tham khảo đã đọc. |
 | 3 | 31/08–06/09 | Học I2S/thu âm cơ bản (mô phỏng); tách code firmware thành các module rõ ràng (wifi/mqtt, display, input); làm MQTT reconnect logic bền hơn (không chỉ demo 1 lần). **Bổ sung giữa tuần (03/09)**: đọc code AI của nhóm trong `Panda-Robotics-Client-/` (tóm tắt ở `ai.md`), phát hiện bạn AI đã có sẵn firmware mẫu vẽ 11 biểu cảm OLED bằng Adafruit_GFX/SSD1306 — port trực tiếp thành 14 biểu cảm (`neutral/happy/sad/angry/surprised/sleepy/wink/love/cool/cute/dizzy/questioning/thinking/speaking`) vào `display.h/.cpp`, làm luôn trong tuần này thay vì để tới Tuần 5. *(Trước khi Thắng tham gia — Khoa làm một mình.)* | Cấu trúc firmware mới + giải thích tại sao tách module + demo 14 biểu cảm OLED qua lệnh Serial `face <ten>`. |
-| 4 | 07/09–13/09 | Firmware **subscribe** lệnh/kết quả từ server (không chỉ publish một chiều); phối hợp với Thái (AI) để nhận kết quả fuzzy matching (từ vựng tiếng Anh) qua MQTT và hiển thị lên OLED. Song song: tìm hiểu điều khiển động cơ DC (L298N/TB6612FNG) qua PWM + cảm biến HC-SR04 trong Wokwi, chuẩn bị cho Tuần 6–7 -Thắng. | Demo 2 chiều: server gửi lệnh → ESP32 phản ứng. |
-| 5 | 14/09–20/09 | ~~Hiển thị nhiều biểu cảm mắt~~ (đã làm sớm ở Tuần 3, xem trên) — tuần này dồn hết vào hiển thị từ vựng tiếng Anh trên OLED bằng font ASCII có sẵn của Adafruit_GFX (không cần custom bitmap font sau khi thu hẹp phạm vi sang tiếng Anh — xem "Quyết định thu hẹp phạm vi" ở trên) + layout hiển thị hình ảnh minh họa đơn giản (icon/emoji dạng bitmap) đi kèm từ vựng. Song song: dựng thêm buzzer + 2 nút bấm BODY vào `diagram.json`, viết khung module `motor.h/.cpp` (chưa cần chạy thật) -Thắng. | OLED hiển thị đúng từ vựng tiếng Anh + icon minh họa, phối hợp bố cục với 14 biểu cảm đã có. |
+| 4 | 07/09–13/09 | Firmware **subscribe** lệnh/kết quả từ server (không chỉ publish một chiều); phối hợp với Thái (AI) để nhận kết quả fuzzy matching (từ vựng tiếng Anh) qua MQTT và hiển thị lên màn. Song song: tìm hiểu điều khiển động cơ DC (L298N/TB6612FNG) qua PWM + cảm biến HC-SR04 trong Wokwi, chuẩn bị cho Tuần 6–7 -Thắng. **Bổ sung đầu tuần (08/09)**: nhóm đổi linh kiện hiển thị từ 2× OLED SSD1306 sang 1× TFT màu ILI9341 2.4" SPI → chuyển toàn bộ `display.*` sang `Adafruit_ILI9341` + `GFXcanvas16`, viết lại 15 biểu cảm có animation liên tục và màu riêng theo cảm xúc, rút mạch còn 2 nút Đúng/Sai + tự luân chuyển biểu cảm khi rảnh -Khoa. | Demo 2 chiều: server gửi lệnh → ESP32 phản ứng. Kèm demo khuôn mặt màu mới trên ILI9341. |
+| 5 | 14/09–20/09 | ~~Hiển thị nhiều biểu cảm mắt~~ (đã làm sớm ở Tuần 3, viết lại cho màn màu ở Tuần 4 — xem trên) — tuần này dồn hết vào hiển thị từ vựng tiếng Anh trên màn bằng font ASCII có sẵn của Adafruit_GFX (không cần custom bitmap font sau khi thu hẹp phạm vi sang tiếng Anh — xem "Quyết định thu hẹp phạm vi" ở trên) + layout hiển thị hình ảnh minh họa đơn giản (icon/emoji dạng bitmap) đi kèm từ vựng. Màn 320×240 màu rộng gấp ~9 lần OLED cũ nên có thể đặt từ vựng + icon cạnh khuôn mặt thay vì tranh chỗ. Song song: dựng thêm buzzer + 2 nút bấm BODY vào `diagram.json`, viết khung module `motor.h/.cpp` (chưa cần chạy thật) -Thắng. | Màn hiển thị đúng từ vựng tiếng Anh + icon minh họa, phối hợp bố cục với 15 biểu cảm đã có. |
 | 6 | 21/09–27/09 | Né vật cản bằng cảm biến siêu âm HC-SR04 (mô phỏng) -Thắng; **kiểm thử tích hợp toàn hệ thống đầu-cuối** -Khoa & Thắng — đây là mốc báo cáo giữa kỳ theo kế hoạch gốc của nhóm. | **Báo cáo tiến độ giữa kỳ**: demo toàn bộ luồng đã làm từ Tuần 2–6. |
 | 7 | 28/09–04/10 | Học điều khiển động cơ DC qua L298N/TB6612FNG + PWM; code phản hồi chuyển động (xoay vòng khi đúng, lắc khi sai) -Thắng. | Demo motor phản hồi theo kết quả đúng/sai. |
 | 8 | 05/10–11/10 | Tích hợp điều khiển di chuyển bằng lệnh giọng nói cơ bản (server gửi lệnh "tiến"/"dừng" qua MQTT → ESP32 điều khiển motor) — dùng lại module `network` Khoa đã xây để nhận lệnh, Thắng viết phần xử lý motor tương ứng -Khoa & Thắng. | Demo điều khiển di chuyển bằng lệnh MQTT giả lập giọng nói. |
