@@ -119,10 +119,17 @@ PANDA/
 4. Nhấn `F1` → `Wokwi: Start Simulator` (hoặc mở `wokwi.com`, kéo thả các file trong `firmware-demo/` vào) để chạy mô phỏng ESP32 + màn ILI9341 + 2 nút bấm.
 5. Mở `firmware-demo/web-dashboard/index.html` bằng trình duyệt để xem bảng tiến độ realtime nhận qua MQTT — **chỉ dùng được khi bật lại MQTT**, xem lưu ý bên dưới.
 
-**Cách tương tác với bản demo:** nút **xanh lá** = trả lời đúng (mặt chuyển `happy`), nút **đỏ** = trả lời sai (mặt chuyển `sad`); bấm xong robot tự chuyển sang từ vựng kế tiếp trong danh sách 9 từ demo. Dải chữ phía trên màn hiện từ tiếng Anh (chữ nhỏ, trắng) kèm **Kanji + Kana** tiếng Nhật (chữ lớn, xanh cyan). Để yên khoảng 6 giây không bấm gì, robot sẽ tự lần lượt diễn 12 biểu cảm còn lại, mỗi biểu cảm ~4.5 giây — đây cũng là cách xem hết mọi animation mà không cần thêm nút test.
+**Cách tương tác với bản demo (đổi 21/09/2026 — bỏ chấm đúng/sai):** màn hình có 2 chế độ, mỗi nút phụ trách một chế độ.
 
-Hai lệnh gõ được vào Serial Monitor: `face <tên>` để xem thẳng một biểu cảm (ví dụ `face love`, `face dizzy`), và `word <anh> <kanji> <kana>` để đặt từ vựng tuỳ ý (ví dụ `word cat 猫 ねこ`).
+| Nút | Chân | Công dụng |
+|---|---|---|
+| Nút 1 | GPIO 25 | **Đổi biểu cảm** — lần lượt đi qua 15 biểu cảm. Nếu đang hiện từ vựng thì bấm nút này để quay về khuôn mặt. |
+| Nút 2 | GPIO 26 | **Hiện từ vựng** — che khuôn mặt, hiện từ cần học chiếm trọn màn: Kanji rất to ở giữa, Kana phía dưới, tiếng Anh phía trên. Bấm tiếp = sang từ kế tiếp trong danh sách 9 từ demo. |
 
-> **Lưu ý — WiFi/MQTT đang TẮT (21/09/2026):** `platformio.ini` đang đặt `-D ENABLE_MQTT=0` để vòng test phần hiển thị chạy nhẹ (không phải chờ WiFi 15 giây mỗi lần khởi động). Ở trạng thái này firmware **không publish gì** và dashboard web sẽ không nhận được dữ liệu — các message lẽ ra gửi đi được in ra Serial thay thế. Đổi cờ đó thành `1` rồi build lại là mọi thứ hoạt động như cũ.
+Hai lệnh gõ được vào Serial Monitor: `face <tên>` để xem thẳng một biểu cảm (ví dụ `face love`, `face dizzy`), và `word <anh> <kanji> <kana>` để hiện từ vựng tuỳ ý (ví dụ `word cat 猫 ねこ`).
+
+> **Lưu ý — WiFi/MQTT đang TẮT (21/09/2026):** `platformio.ini` đang đặt `-D ENABLE_MQTT=0` để vòng test phần hiển thị chạy nhẹ (không phải chờ WiFi 15 giây mỗi lần khởi động). Ở trạng thái này firmware **không publish gì** — các message lẽ ra gửi đi được in ra Serial thay thế. Đổi cờ đó thành `1` rồi build lại là mạng hoạt động trở lại.
+>
+> **Dashboard web cần sửa lại trước khi dùng tiếp:** vì đã bỏ chấm đúng/sai, firmware không còn publish `panda/demo/khoa/result` và `panda/demo/khoa/progress` nữa mà chỉ publish `panda/demo/khoa/word` (từ vựng đang hiển thị). `web-dashboard/index.html` vẫn đang nghe 2 topic cũ nên sẽ không nhận được gì — cần cập nhật khi quay lại làm phần dashboard.
 
 Chi tiết kế hoạch từng bước xem [PROJECT.md](PROJECT.md).

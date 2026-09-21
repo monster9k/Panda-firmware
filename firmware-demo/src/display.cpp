@@ -89,8 +89,9 @@ static U8G2_FOR_ADAFRUIT_GFX u8g2;
 // u8g2 KHÔNG có phép phóng to chữ như setTextSize() của Adafruit_GFX, mà font Nhật lớn
 // nhất của u8g2 chỉ cao 16px — quá nhỏ để trẻ em đọc Kanji nhiều nét trên màn 2.4".
 // Cách giải quyết: vẽ chữ ra một tờ giấy nháp 1 bit rồi phóng to từng điểm ảnh lúc bắn
-// lên màn (xem drawUtf8Scaled). Chữ hơi răng cưa nhưng cao gấp đôi, đọc thoải mái.
-static const uint8_t JP_SCALE = 2;
+// lên màn (xem drawUtf8Centered). Chữ hơi răng cưa nhưng to hẳn, đọc thoải mái.
+static const uint8_t JP_MAIN_SCALE = 3; // Kanji giữa màn: 16px * 3 = 48px
+static const uint8_t JP_SUB_SCALE = 2;  // Kana phía dưới: 16px * 2 = 32px
 
 static const int FACE_CX = CANVAS_W / 2; // 120 — tâm khuôn mặt trong hệ toạ độ canvas
 static const int FACE_CY = CANVAS_H / 2; // 65
@@ -119,8 +120,13 @@ static String currentExpression = "neutral";
 static String currentEnglish = "";
 static String currentKanji = "";
 static String currentKana = "";
-static int currentCorrect = 0;
-static int currentWrong = 0;
+
+// Màn hình có đúng 2 chế độ loại trừ nhau, không bao giờ hiện cùng lúc:
+//   false — CHẾ ĐỘ KHUÔN MẶT: animation mắt chạy liên tục ~33 khung/giây.
+//   true  — CHẾ ĐỘ TỪ VỰNG: từ cần học chiếm trọn màn, animation tạm dừng.
+// Tách hẳn 2 chế độ (thay vì nhét chữ vào dải hẹp phía trên khuôn mặt như bản trước) để
+// chữ Kanji được phóng to hết cỡ giữa màn — lúc học từ thì từ vựng là thứ duy nhất đáng nhìn.
+static bool wordMode = false;
 
 static uint32_t animFrame = 0;
 static unsigned long lastFrameUs = 0;
@@ -776,69 +782,47 @@ static void drawUtf8Centered(int16_t x, int16_t centerY, const char *utf8,
 // Vẽ 2 dải chữ NGOÀI vùng canvas (từ vựng phía trên, điểm số phía dưới). Chỉ gọi khi số
 // liệu thay đổi — không vẽ mỗi khung hình, để dành băng thông SPI cho khuôn mặt.
 //
-// Bố cục dải trên (cao 56px, từ y=0 tới ngay trước khuôn mặt):
-//   y=2..16   tiếng Anh, cỡ chữ 2 của Adafruit_GFX
-//   y=18..50  tiếng Nhật: Kanji phóng to 2x (cao 32px) + Kana cỡ gốc 16px bên cạnh
-//   y=54      đường kẻ ngăn cách với khuôn mặt
-static void drawChrome()
+// Vẽ màn hình TỪ VỰNG — chiếm trọn 320x240, không có khuôn mặt.
+//
+// Bố cục (từ trên xuống):
+//   tâm y=44    tiếng Anh, cỡ chữ 3 của Adafruit_GFX (cao 21px, trắng)
+//   tâm y=120   Kanji phóng to 3x — cao ~48px, nằm đúng giữa màn, là thứ nổi bật nhất
+//   tâm y=190   Kana phóng to 2x — cao ~32px, màu nhạt hơn vì chỉ là cách đọc
+//
+// Từ nào không có Kanji (ví dụ từ mượn viết bằng Katakana như ケーキ) thì chính Kana được
+// đôn lên vị trí giữa với cỡ chữ lớn nhất, và dòng dưới bỏ trống — không để màn trống hoác.
+static void drawWordScreen()
 {
-  tft.fillRect(0, 0, SCREEN_WIDTH, CANVAS_Y, COLOR_BG);
-  tft.fillRect(0, CANVAS_Y + CANVAS_H, SCREEN_WIDTH,
-               SCREEN_HEIGHT - (CANVAS_Y + CANVAS_H), COLOR_BG);
-
+  tft.fillScreen(COLOR_BG);
   tft.setTextWrap(false);
+
   if (currentEnglish.length() > 0)
   {
-    tft.setTextSize(2);
+    tft.setTextSize(3);
     tft.setTextColor(COLOR_WHITE);
-    int textW = (int)currentEnglish.length() * 12; // cỡ chữ 2 => mỗi ký tự rộng 12 điểm ảnh
-    tft.setCursor(max(4, (SCREEN_WIDTH - textW) / 2), 2);
+    int textW = (int)currentEnglish.length() * 18; // cỡ chữ 3 => mỗi ký tự rộng 18 điểm ảnh
+    tft.setCursor(max(4, (SCREEN_WIDTH - textW) / 2), 44 - 10);
     tft.print(currentEnglish);
   }
 
-  // Kanji là "nhân vật chính" nên được phóng to; Kana chỉ là cách đọc nên để cỡ gốc.
-  // Từ nào không có Kanji (ví dụ đồ vật viết bằng Katakana) thì chính Kana được phóng to
-  // thay chỗ, để dải chữ không bị trống hoác.
   String jpMain = currentKanji.length() > 0 ? currentKanji : currentKana;
   String jpSub = currentKanji.length() > 0 ? currentKana : String("");
 
+  // Bề rộng phải đo bằng getUTF8Width, KHÔNG được tính theo số byte: mỗi chữ Nhật chiếm
+  // 3 byte UTF-8 nên length() cho ra con số gấp 3 và căn giữa sẽ lệch hẳn sang trái.
   if (jpMain.length() > 0)
   {
-    const int GAP = 12;
-    const int JP_CENTER_Y = 36; // tâm dải chữ Nhật: Kanji cao 32px sẽ chiếm y=20..52
-
-    // Bề rộng phải đo bằng getUTF8Width, KHÔNG được tính theo số byte: mỗi chữ Nhật chiếm
-    // 3 byte UTF-8 nên length() luôn cho ra con số gấp 3 và căn giữa sẽ lệch hẳn sang trái.
-    int mainW = measureUtf8(jpMain.c_str(), JP_SCALE);
-    int subW = measureUtf8(jpSub.c_str(), 1);
-    int totalW = mainW + (subW > 0 ? GAP + subW : 0);
-    int startX = max(2, (SCREEN_WIDTH - totalW) / 2);
-
-    drawUtf8Centered(startX, JP_CENTER_Y, jpMain.c_str(), COLOR_CYAN, JP_SCALE);
-    if (subW > 0)
-    {
-      // Cùng một tâm dọc -> Kana tự canh giữa so với Kanji cao gấp đôi bên cạnh.
-      drawUtf8Centered(startX + mainW + GAP, JP_CENTER_Y, jpSub.c_str(),
-                       scaleColor(COLOR_CYAN, 70), 1);
-    }
+    int mainW = measureUtf8(jpMain.c_str(), JP_MAIN_SCALE);
+    drawUtf8Centered(max(2, (SCREEN_WIDTH - mainW) / 2), 120,
+                     jpMain.c_str(), COLOR_CYAN, JP_MAIN_SCALE);
   }
 
-  tft.drawFastHLine(70, 54, SCREEN_WIDTH - 140, scaleColor(COLOR_CYAN, 45));
-
-  const int chipW = 128, chipH = 30, chipY = SCREEN_HEIGHT - 38;
-  tft.setTextSize(2);
-
-  tft.drawRoundRect(22, chipY, chipW, chipH, 8, COLOR_GREEN);
-  tft.setTextColor(COLOR_GREEN);
-  tft.setCursor(22 + 17, chipY + 8);
-  tft.print("DUNG ");
-  tft.print(currentCorrect);
-
-  tft.drawRoundRect(SCREEN_WIDTH - 22 - chipW, chipY, chipW, chipH, 8, COLOR_RED);
-  tft.setTextColor(COLOR_RED);
-  tft.setCursor(SCREEN_WIDTH - 22 - chipW + 17, chipY + 8);
-  tft.print("SAI  ");
-  tft.print(currentWrong);
+  if (jpSub.length() > 0)
+  {
+    int subW = measureUtf8(jpSub.c_str(), JP_SUB_SCALE);
+    drawUtf8Centered(max(2, (SCREEN_WIDTH - subW) / 2), 190,
+                     jpSub.c_str(), scaleColor(COLOR_CYAN, 70), JP_SUB_SCALE);
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -853,7 +837,7 @@ void displaySetup()
 
   // Gắn bộ vẽ font Nhật vào chính đối tượng tft. Phải gọi SAU tft.begin() vì nó đọc kích
   // thước màn hình từ đối tượng GFX. setFontMode(1) = nền trong suốt: chỉ tô các điểm ảnh
-  // thuộc nét chữ, không tô ô chữ nhật nền phía sau — cần thiết vì dải chữ đã có nền riêng.
+  // thuộc nét chữ, không tô ô chữ nhật nền phía sau.
   u8g2.begin(tft);
   u8g2.setFontMode(1);
   u8g2.setFontDirection(0);
@@ -871,13 +855,22 @@ void displaySetup()
     return;
   }
 
-  drawChrome();
   lastBlinkMs = millis();
 }
 
 void displaySetExpression(const char *expression)
 {
-  if (currentExpression == expression)
+  // Nếu đang hiện từ vựng thì đổi biểu cảm đồng nghĩa với "quay về khuôn mặt": phải xoá
+  // sạch chữ trên màn trước, vì khung hình khuôn mặt chỉ vẽ đè lên đúng vùng canvas ở giữa,
+  // không chạm tới phần còn lại của màn.
+  bool leavingWordMode = wordMode;
+  if (leavingWordMode)
+  {
+    wordMode = false;
+    tft.fillScreen(COLOR_BG);
+  }
+
+  if (currentExpression == expression && !leavingWordMode)
   {
     return; // đang là biểu cảm đó rồi -> đừng reset animation về khung 0 một cách vô ích
   }
@@ -903,25 +896,15 @@ void displaySetWord(const char *english, const char *kanji, const char *kana)
   Serial.print(" / ");
   Serial.println(currentKana);
 
-  if (faceCanvas.getBuffer() != nullptr)
-  {
-    drawChrome();
-  }
-}
-
-void displaySetScore(int correctCount, int wrongCount)
-{
-  currentCorrect = correctCount;
-  currentWrong = wrongCount;
-  if (faceCanvas.getBuffer() != nullptr)
-  {
-    drawChrome();
-  }
+  wordMode = true;
+  drawWordScreen();
 }
 
 void displayLoop()
 {
-  if (faceCanvas.getBuffer() == nullptr)
+  // Đang hiện từ vựng thì dừng hẳn animation: nếu vẫn bắn khung hình khuôn mặt lên, nó sẽ
+  // đè một mảng 240x130 vào đúng giữa màn và xoá mất chữ Kanji đang hiển thị.
+  if (wordMode || faceCanvas.getBuffer() == nullptr)
   {
     return;
   }
