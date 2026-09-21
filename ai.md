@@ -76,7 +76,7 @@ Panda-Robotics-Client-/
 
 **Broker**: `config/settings.py` đặt `MQTT_BROKER = "localhost"` — nhóm AI giả định **tự host Mosquitto** (đúng khoản "Não cloud (giờ G)" trong BOM), khác với demo học tập của Khoa hiện đang dùng broker công cộng `broker.hivemq.com`. Topic namespace cũng khác hẳn: `panda/cmd/*`, `panda/ai/*`, `panda/status` (chuẩn thật) so với `panda/demo/khoa/*` (chỉ dùng riêng cho demo học — theo đúng quy ước "không đụng namespace người khác" trong `CLAUDE.md`) — **không bị đụng độ, nhưng khi tích hợp thật sẽ cần chuyển firmware của Khoa sang đúng namespace `panda/cmd/*`/`panda/status`.**
 
-## 5. OLED biểu cảm — nguồn tham chiếu chính cho việc làm biểu cảm nhúng
+## 5. Biểu cảm khuôn mặt — nguồn tham chiếu chính cho phần nhúng
 
 Nhóm AI đã làm biểu cảm ở **2 nơi khác nhau**, ngoại hình không giống hệt nhau:
 
@@ -84,20 +84,25 @@ Nhóm AI đã làm biểu cảm ở **2 nơi khác nhau**, ngoại hình không 
    - 11 cảm xúc (`ALL_EMOTIONS`): `neutral, happy, sad, surprised, angry, love, wink, sleepy, dizzy, cool, cute`
    - 4 trạng thái AI (`ALL_AI_MODES`): `questioning, hearing, ai-thinking, speaking`
    - 25 hành vi idle tự chủ (`IDLE_BEHAVIORS`, vd `idle-look-left/right/up`, ...) — Panda tự "liếc mắt" khi rảnh, không nhại cảm xúc người dùng (mặc định `EMOTION_MIRROR = False` trong settings.py).
-   - Vì dùng CSS/HTML nên **không thể copy trực tiếp sang OLED đơn sắc 128×64** — chỉ dùng để tham khảo Ý TƯỞNG (khi nào hiện biểu cảm gì).
+   - Là nguồn gốc của **bảng màu neon theo cảm xúc** và các hiệu ứng `@keyframes` mà firmware sau này mô phỏng lại.
 
-2. **`firmware/panda_firmware/panda_firmware.ino`** — ⭐ **đây mới là code dùng được trực tiếp**: hàm `drawFace()` vẽ **11 biểu cảm bằng Adafruit_GFX/SSD1306 thật** (cùng thư viện `firmware-demo/` của Khoa đang dùng): `neutral, happy, sad, angry, surprised, sleepy, wink, love, cool, cute, dizzy`, cộng thêm `questioning` (dấu `?`) và 2 biểu cảm động `thinking` (3 chấm nhấp nháy tuần tự) / `speaking` (equalizer bar nhảy theo `millis()`).
-   - Toạ độ mắt cố định: `L=32, R=76, Y=17, W=20, H=30` (không đổi giữa các firmware — nên giữ nguyên nếu Khoa port sang, để 2 phần cứng "nói cùng ngôn ngữ hình ảnh").
-   - Cách chọn biểu cảm: nhận lệnh qua topic `panda/cmd/face` (MQTT thật) HOẶC gõ tay `face happy` qua Serial Monitor (chế độ mô phỏng Wokwi, không cần MQTT) — cùng 1 hàm `handleCmd()` xử lý cả 2 nguồn.
+2. **`firmware/panda_firmware/`** — ⭐ **đây mới là code dùng được trực tiếp**. Đã được nhóm AI viết lại (cập nhật 08/09/2026), giờ tách thành nhiều file:
+   - `Config.h` — bảng chân GPIO + **bảng màu RGB565** khớp dashboard web (`COLOR_CYAN 0x067F`, `COLOR_PINK 0xF9B0`, `COLOR_BG 0x0823`...) + hằng số kích thước/tốc độ khung hình.
+   - `FaceRenderer.h` — bộ vẽ khuôn mặt cho **màn TFT ILI9341 320×240 màu** (không còn là OLED đơn sắc): 15 biểu cảm `neutral/happy/sad/angry/surprised/love/wink/sleepy/cool/cute/dizzy/questioning/hearing/ai-thinking/speaking` + 5 hành vi idle (`idle-look-left/right/up`, `idle-curious`, `idle-squint`). Vẽ vào `GFXcanvas16` 170×100 trong RAM rồi bắn 1 lần bằng `drawRGBBitmap()`, chạy 60fps, có hệ thống nháy mắt riêng.
+   - `firmware/oled_face_test/` — sketch test riêng chỉ để xem khuôn mặt, dùng lại chính `FaceRenderer.h` (tên thư mục còn chữ "oled" từ thời cũ, nhưng bên trong đã là ILI9341).
+   - Cách chọn biểu cảm: nhận lệnh qua topic `panda/cmd/face` (MQTT thật) HOẶC gõ tay `face happy` / `demo` qua Serial Monitor (chế độ mô phỏng Wokwi, không cần MQTT).
 
-**Kế hoạch tích hợp vào `firmware-demo/` của Khoa (Tuần 3)**: port `drawFace()` từ `panda_firmware.ino` vào `firmware-demo/src/display.*`, giữ nguyên toạ độ mắt + tên biểu cảm để tương thích ngược khi ghép MQTT thật sau này. Xem `WEEKLY_LOGIC.md` mục Tuần 3 để biết chi tiết đã triển khai.
+**Đã tích hợp vào `firmware-demo/` của Khoa (Tuần 4, 08/09/2026)**: sau khi nhóm đổi BOM sang màn ILI9341, `firmware-demo/src/display.*` đã được **viết lại hoàn toàn** theo cùng kiến trúc (canvas trong RAM + blit 1 lần), giữ nguyên **tên biểu cảm** và **bảng màu RGB565** để tương thích khi ghép MQTT thật. Khác biệt có chủ ý so với bản của nhóm AI: canvas lớn hơn (240×130 thay vì 170×100, vì demo của Khoa không phải chừa RAM cho camera), thêm quầng sáng neon 2 lớp quanh mắt, và một số hiệu ứng riêng (giọt nước mắt khi `sad`, chữ "z" bay khi `sleepy`, vệt sáng quét kính khi `cool`, hạt lấp lánh khi `cute`). Xem `WEEKLY_LOGIC.md` mục Tuần 4 để biết chi tiết.
+
+> **Lưu ý về bảng chân**: `firmware-demo/src/pins.h` của Khoa đã cố tình đặt chân SPI **trùng khớp 1:1** với `Config.h` (CS=5, RST=4, DC=2, MOSI=23, SCK=18, MISO=19) để 2 firmware nạp chung một mạch thật được. Đừng đổi số chân ở một bên mà không báo bên kia.
 
 ## 6. Firmware mẫu của nhóm AI vs. `firmware-demo/` của Khoa — khác biệt cần lưu ý
 
-| | `firmware/panda_firmware.ino` (nhóm AI) | `firmware-demo/src/` (Khoa) |
+| | `firmware/panda_firmware/` (nhóm AI) | `firmware-demo/src/` (Khoa) |
 |---|---|---|
-| Cấu trúc | 1 file `.ino` duy nhất, Arduino IDE style | Tách nhiều file `.h`/`.cpp`, PlatformIO |
-| Phạm vi | Gộp cả HEAD (OLED) + BODY (motor, HC-SR04, buzzer, nút) trong 1 sketch | Chỉ OLED + 2 nút + WiFi/MQTT + module học I2S |
+| Cấu trúc | `.ino` + các file `.h` (`Config.h`, `FaceRenderer.h`, `RobotMotor.h`), Arduino IDE style | Tách `.h`/`.cpp` theo module, PlatformIO |
+| Phạm vi | Gộp cả HEAD (màn TFT) + BODY (motor, HC-SR04, buzzer, nút) trong 1 sketch | Chỉ màn TFT + 2 nút + WiFi/MQTT + module học I2S |
+| Khuôn mặt | Canvas 170×100, 60fps, 15 biểu cảm + 5 idle | Canvas 240×130, 33fps, 15 biểu cảm + quầng sáng neon + hiệu ứng phụ riêng |
 | Kết nối | Mặc định chạy Serial-command (không cần MQTT); `#define USE_MQTT` để bật WiFi+MQTT thật | Luôn dùng WiFi+MQTT (broker công cộng để demo) |
 | MQTT reconnect | `if (!mqtt.connected()) mqtt.connect(...)` — kiểm tra mỗi vòng loop, không có cơ chế chờ giữa các lần thử | Đã làm "bền hơn" ở Tuần 3: chỉ thử lại mỗi 5s bằng `millis()`, không chặn `loop()` (xem `WEEKLY_LOGIC.md`) |
 
@@ -113,9 +118,11 @@ Nhóm AI đã làm biểu cảm ở **2 nơi khác nhau**, ngoại hình không 
 
 Đây chỉ là **quan sát khách quan từ code**, Claude không tự sửa lại phần "Quyết định thu hẹp phạm vi" trong `PROJECT.md` vì đây là quyết định của cả nhóm, không phải điều Khoa (hay Claude) có thể tự quyết một mình. **Khoa nên trao đổi lại với nhóm** xem có nên cập nhật lại phần "Scope note" trong `README.md`/`CLAUDE.md`/`PROJECT.md` cho khớp thực tế hay không, để tránh ghi sai trong báo cáo cuối kỳ.
 
+**Cập nhật (21/09/2026):** nhóm đã quyết định thêm **tiếng Nhật** vào phạm vi dạy, song song với tiếng Anh (chi tiết ở `PROJECT.md` mục "Thêm lại tiếng Nhật vào phạm vi") — vẫn giữ mô hình một chiều robot → trẻ, không quay lại hội thoại Việt↔Nhật hai chiều như đề xuất gốc. Phần này chủ yếu ảnh hưởng tới firmware (font Kana trên màn hình) và dữ liệu từ vựng có gắn nhãn ngôn ngữ; **chưa rõ code AI (`brain.py`, `voice.py`, `llm.py`, `tts.py`) đã có sẵn phần xử lý tiếng Nhật hay chưa** — cần Khoa xác nhận lại với bạn phụ trách AI trước khi giả định STT/LLM/TTS trong `Panda-Robotics-Client-/` đã hỗ trợ song ngữ Anh/Nhật, vì tài liệu này chỉ tóm tắt code tại thời điểm đọc, chưa được cập nhật lại theo quyết định mở rộng phạm vi lần này.
+
 ## 9. Việc cần phối hợp giữa Khoa (firmware) và bạn AI
 
 - **Namespace MQTT**: khi ghép thật, đổi `firmware-demo/` từ `panda/demo/khoa/*` sang đúng chuẩn `panda/cmd/*` (nhận lệnh) + `panda/status` (gửi cảm biến) mà `brain.py`/`web/server.js` đang subscribe sẵn.
 - **Broker**: đổi từ `broker.hivemq.com` (demo công cộng) sang broker tự host mà nhóm AI dùng (`localhost:1883`, hoặc VPS thật khi có).
-- **Biểu cảm OLED**: dùng chung 1 bộ tên biểu cảm (`neutral/happy/sad/angry/surprised/sleepy/wink/love/cool/cute/dizzy/questioning/thinking/speaking`) giữa firmware của Khoa và payload `panda/cmd/face` mà brain.py publish — đã bắt đầu port ở Tuần 3, xem `WEEKLY_LOGIC.md`.
+- **Biểu cảm khuôn mặt**: dùng chung 1 bộ tên biểu cảm (`neutral/happy/sad/angry/surprised/sleepy/wink/love/cool/cute/dizzy/questioning/hearing/thinking/speaking`) **và** bảng màu RGB565 giữa firmware của Khoa và payload `panda/cmd/face` mà brain.py publish — đã port ở Tuần 3 và viết lại cho màn ILI9341 ở Tuần 4, xem `WEEKLY_LOGIC.md`. Lưu ý một khác biệt nhỏ về tên: bản của nhóm AI dùng `ai-thinking`, firmware của Khoa nhận cả `thinking` lẫn `ai-thinking` để khỏi lệch.
 - **Chân GPIO**: thống nhất lại bảng chân giữa 2 board HEAD/BODY thật trước khi ai đó nạp cả 2 sketch lên cùng 1 board test nhanh (xem mục 6).

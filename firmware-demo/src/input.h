@@ -2,15 +2,17 @@
 #include <Arduino.h>
 
 // Kết quả đọc được của 1 lượt inputPoll(): None nếu không có nút nào vừa được bấm.
+//
+// Từ 21/09/2026 hai nút KHÔNG còn mang nghĩa "trả lời đúng / trả lời sai" nữa (bản demo bỏ
+// phần chấm điểm): nút thứ nhất đổi biểu cảm, nút thứ hai hiện từ vựng để học.
 enum class ButtonEvent
 {
   None,
-  Correct,
-  Wrong,
-  CycleFace // nút thứ 3: chuyển sang biểu cảm OLED kế tiếp
+  NextFace,
+  NextWord
 };
 
-// Cấu hình pinMode cho cả 3 nút. Gọi 1 lần trong setup().
+// Cấu hình pinMode cho cả 2 nút. Gọi 1 lần trong setup().
 void inputSetup();
 
 // Gọi mỗi vòng loop(). Trả về đúng 1 sự kiện cho lần bấm mới nhất (đã tự debounce +
