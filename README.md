@@ -1,8 +1,8 @@
-# PANDA – Robot đồng hành thông minh hỗ trợ trẻ em học tiếng Anh
+# PANDA – Robot đồng hành thông minh hỗ trợ trẻ em học tiếng Anh và tiếng Nhật
 
-Robot để bàn dùng giọng nói làm kênh tương tác chính, giúp trẻ em làm quen và luyện nghe – nói từ vựng tiếng Anh. Robot phát âm mẫu (TTS), nhận diện và chấm câu trả lời của trẻ (STT + fuzzy matching), phản hồi bằng chuyển động, biểu cảm khuôn mặt và từ vựng/hình ảnh minh họa tiếng Anh trên màn hình OLED. Robot còn nhận lệnh di chuyển bằng giọng nói tiếng Anh/Việt cơ bản ("Go", "Stop", "tiến lên", "dừng lại") để tương tác vận động cùng trẻ, và né vật cản bằng cảm biến siêu âm. Dữ liệu tương tác truyền qua MQTT trên nền tảng IoT và lưu trên server để phụ huynh/sinh viên theo dõi tiến độ học tập qua giao diện web.
+Robot để bàn dùng giọng nói làm kênh tương tác chính, giúp trẻ em làm quen và luyện nghe – nói từ vựng **tiếng Anh và tiếng Nhật**. Robot phát âm mẫu (TTS), nhận diện và chấm câu trả lời của trẻ (STT + fuzzy matching), phản hồi bằng chuyển động, biểu cảm khuôn mặt và từ vựng/hình ảnh minh họa trên màn hình OLED — bằng tiếng Anh hoặc tiếng Nhật tùy bài học. Robot còn nhận lệnh di chuyển bằng giọng nói tiếng Anh/Việt cơ bản ("Go", "Stop", "tiến lên", "dừng lại") để tương tác vận động cùng trẻ, và né vật cản bằng cảm biến siêu âm. Dữ liệu tương tác truyền qua MQTT trên nền tảng IoT và lưu trên server để phụ huynh/sinh viên theo dõi tiến độ học tập qua giao diện web.
 
-> Lưu ý phạm vi: đề xuất ban đầu của nhóm hướng tới học tiếng Nhật hai chiều (Việt↔Nhật). Nhóm đã thu hẹp phạm vi thành dạy tiếng Anh một chiều cho trẻ em — lý do và phân tích kỹ thuật xem mục "Quyết định thu hẹp phạm vi" trong [PROJECT.md](PROJECT.md). **Cập nhật (03/09/2026)**: code AI thật trong `Panda-Robotics-Client-/` cho thấy phạm vi triển khai thực tế đã rộng hơn (hội thoại tiếng Việt tự do, không chỉ chấm từ vựng) — xem [ai.md](ai.md) mục 8, cần nhóm thống nhất lại.
+> Lưu ý phạm vi: đề xuất ban đầu của nhóm hướng tới học tiếng Nhật hai chiều (Việt↔Nhật). Nhóm đã thu hẹp phạm vi thành dạy tiếng Anh một chiều cho trẻ em — lý do và phân tích kỹ thuật xem mục "Quyết định thu hẹp phạm vi" trong [PROJECT.md](PROJECT.md). **Cập nhật (03/09/2026)**: code AI thật trong `Panda-Robotics-Client-/` cho thấy phạm vi triển khai thực tế đã rộng hơn (hội thoại tiếng Việt tự do, không chỉ chấm từ vựng) — xem [ai.md](ai.md) mục 8, cần nhóm thống nhất lại. **Cập nhật (21/09/2026)**: nhóm quyết định thêm lại **tiếng Nhật** vào phạm vi dạy, dạy **song song cùng tiếng Anh** (không phải quay lại hội thoại Việt↔Nhật hai chiều như đề xuất gốc, vẫn một chiều robot → trẻ). Tác động chính tới firmware: cần hiển thị chữ Kana (hiragana/katakana) trên màn hình, phần trước đó đã bị loại khỏi phạm vi vì `Adafruit_GFX` không hỗ trợ sẵn font này — xem ghi chú trong [PROJECT.md](PROJECT.md).
 
 ## Thành viên nhóm
 
@@ -24,6 +24,8 @@ CLOUD SERVER (AI Backend)
   - AI Pipeline: STT -> NLU -> Grammar Checker -> Conversation Engine -> Quiz Generator -> TTS
   - Computer Vision: Face Recognition, Emotion Detection, Engagement Tracking
 ```
+
+> **Đa ngôn ngữ (21/09/2026)**: STT/TTS trong pipeline trên cần chạy được cho cả tiếng Anh và tiếng Nhật (đổi tham số ngôn ngữ của API cloud, không cần tải/tự huấn luyện model riêng cho từng ngôn ngữ — xem phân tích kỹ thuật trong `PROJECT.md`). Vocabulary History/Progress Tracking trong Database cũng cần lưu kèm ngôn ngữ của từ đang học, không chỉ từ vựng.
 
 Chi tiết đầy đủ xem trong tài liệu đề xuất PBL4 của nhóm.
 
@@ -115,8 +117,12 @@ PANDA/
 2. Mở thư mục `firmware-demo/` trong VS Code.
 3. Build: `pio run` (kiểm tra code compile sạch).
 4. Nhấn `F1` → `Wokwi: Start Simulator` (hoặc mở `wokwi.com`, kéo thả các file trong `firmware-demo/` vào) để chạy mô phỏng ESP32 + màn ILI9341 + 2 nút bấm.
-5. Mở `firmware-demo/web-dashboard/index.html` bằng trình duyệt để xem bảng tiến độ realtime nhận qua MQTT.
+5. Mở `firmware-demo/web-dashboard/index.html` bằng trình duyệt để xem bảng tiến độ realtime nhận qua MQTT — **chỉ dùng được khi bật lại MQTT**, xem lưu ý bên dưới.
 
-**Cách tương tác với bản demo:** nút **xanh lá** = trả lời đúng (mặt chuyển `happy`), nút **đỏ** = trả lời sai (mặt chuyển `sad`). Để yên khoảng 6 giây không bấm gì, robot sẽ tự lần lượt diễn 12 biểu cảm còn lại, mỗi biểu cảm ~4.5 giây — đây cũng là cách xem hết mọi animation mà không cần thêm nút test. Muốn xem thẳng một biểu cảm cụ thể thì gõ `face <tên>` vào Serial Monitor (ví dụ `face love`, `face dizzy`).
+**Cách tương tác với bản demo:** nút **xanh lá** = trả lời đúng (mặt chuyển `happy`), nút **đỏ** = trả lời sai (mặt chuyển `sad`); bấm xong robot tự chuyển sang từ vựng kế tiếp trong danh sách 9 từ demo. Dải chữ phía trên màn hiện từ tiếng Anh (chữ nhỏ, trắng) kèm **Kanji + Kana** tiếng Nhật (chữ lớn, xanh cyan). Để yên khoảng 6 giây không bấm gì, robot sẽ tự lần lượt diễn 12 biểu cảm còn lại, mỗi biểu cảm ~4.5 giây — đây cũng là cách xem hết mọi animation mà không cần thêm nút test.
+
+Hai lệnh gõ được vào Serial Monitor: `face <tên>` để xem thẳng một biểu cảm (ví dụ `face love`, `face dizzy`), và `word <anh> <kanji> <kana>` để đặt từ vựng tuỳ ý (ví dụ `word cat 猫 ねこ`).
+
+> **Lưu ý — WiFi/MQTT đang TẮT (21/09/2026):** `platformio.ini` đang đặt `-D ENABLE_MQTT=0` để vòng test phần hiển thị chạy nhẹ (không phải chờ WiFi 15 giây mỗi lần khởi động). Ở trạng thái này firmware **không publish gì** và dashboard web sẽ không nhận được dữ liệu — các message lẽ ra gửi đi được in ra Serial thay thế. Đổi cờ đó thành `1` rồi build lại là mọi thứ hoạt động như cũ.
 
 Chi tiết kế hoạch từng bước xem [PROJECT.md](PROJECT.md).

@@ -11,17 +11,67 @@
 
 const char *TOPIC_RESULT = "panda/demo/khoa/result";
 const char *TOPIC_PROGRESS = "panda/demo/khoa/progress";
-const char *DEMO_WORD = "hello";
 
 static int correctCount = 0;
 static int wrongCount = 0;
 
+// ---------------------------------------------------------------------------
+//  Danh sách từ vựng demo (tiếng Anh + tiếng Nhật)
+//
+//  Phạm vi dự án từ 21/09/2026 có thêm tiếng Nhật bên cạnh tiếng Anh, nên mỗi từ mang 3
+//  phần: chữ Latin, Kanji, và cách đọc bằng Kana. Từ nào tiếng Nhật không dùng Kanji thì
+//  để trống ô kanji — display.cpp sẽ tự phóng to phần Kana thay vào chỗ đó.
+//
+//  LƯU Ý khi sửa file này: phải lưu bằng mã hoá UTF-8 (VS Code mặc định là UTF-8, xem góc
+//  dưới bên phải). Nếu lưu nhầm bảng mã khác, các chữ Nhật bên dưới biến thành byte rác và
+//  màn hình sẽ hiện ra khoảng trắng.
+//
+//  Đây chỉ là dữ liệu tạm để test khi chưa có server: sau này khi bật lại MQTT, từ vựng sẽ
+//  do server gửi xuống qua topic panda/cmd/word và gọi đúng hàm displaySetWord().
+// ---------------------------------------------------------------------------
+struct VocabWord
+{
+  const char *english;
+  const char *kanji;
+  const char *kana;
+};
+
+static const VocabWord VOCAB[] = {
+    {"dog", "犬", "いぬ"},
+    {"cat", "猫", "ねこ"},
+    {"water", "水", "みず"},
+    {"fish", "魚", "さかな"},
+    {"mountain", "山", "やま"},
+    {"flower", "花", "はな"},
+    {"book", "本", "ほん"},
+    {"rain", "雨", "あめ"},
+    {"cake", "", "ケーキ"}, // từ mượn, tiếng Nhật viết bằng Katakana, không có Kanji
+};
+static const int VOCAB_LEN = sizeof(VOCAB) / sizeof(VOCAB[0]);
+
+static int vocabIndex = 0;
+
+static void showVocabWord(int index)
+{
+  const VocabWord &w = VOCAB[index];
+  displaySetWord(w.english, w.kanji, w.kana);
+}
+
+// Sang từ kế tiếp, hết danh sách thì quay vòng về đầu. Luôn gọi SAU publishResult() để
+// message gửi đi còn mang đúng từ vừa được chấm, không phải từ mới.
+static void nextVocabWord()
+{
+  vocabIndex = (vocabIndex + 1) % VOCAB_LEN;
+  showVocabWord(vocabIndex);
+}
+
 static void publishResult(const char *result)
 {
-  char payload[128];
+  const VocabWord &w = VOCAB[vocabIndex];
+  char payload[160];
   snprintf(payload, sizeof(payload),
-           "{\"word\":\"%s\",\"result\":\"%s\",\"ts\":%lu}",
-           DEMO_WORD, result, millis());
+           "{\"word\":\"%s\",\"kanji\":\"%s\",\"result\":\"%s\",\"ts\":%lu}",
+           w.english, w.kanji, result, millis());
   networkPublish(TOPIC_RESULT, payload);
 
   char progress[64];
@@ -85,9 +135,43 @@ static void handleIdleFaces()
   idleIndex = (idleIndex + 1) % IDLE_FACES_LEN;
 }
 
-// Gõ "face <ten>" qua Serial Monitor để xem thẳng 1 biểu cảm bất kỳ — cùng quy ước
-// "face X" với firmware của bạn AI trong nhóm (xem ai.md mục 5). Tiện khi cần chụp ảnh
-// hoặc quay video đúng một biểu cảm, khỏi phải ngồi đợi vòng tự diễn chạy tới.
+// Tách một chuỗi thành tối đa 3 phần ngăn cách bằng dấu cách. Cắt theo BYTE là an toàn với
+// tiếng Nhật: trong UTF-8, byte của dấu cách (0x20) không bao giờ xuất hiện bên trong một
+// chữ nhiều byte, nên không có nguy cơ cắt đôi chữ 犬 thành byte rác.
+static int splitWords(const String &text, String *parts, int maxParts)
+{
+  int count = 0;
+  int i = 0;
+  while (count < maxParts && i < (int)text.length())
+  {
+    while (i < (int)text.length() && text[i] == ' ')
+    {
+      i++;
+    }
+    if (i >= (int)text.length())
+    {
+      break;
+    }
+    int space = text.indexOf(' ', i);
+    if (space < 0)
+    {
+      space = text.length();
+    }
+    parts[count++] = text.substring(i, space);
+    i = space;
+  }
+  return count;
+}
+
+// 2 lệnh gõ qua Serial Monitor:
+//
+//   face <ten>              — xem thẳng 1 biểu cảm bất kỳ (cùng quy ước với firmware của bạn
+//                             AI trong nhóm, xem ai.md mục 5).
+//   word <anh> <kanji> <kana>  — đặt từ vựng tuỳ ý, ví dụ: word dog 犬 いぬ
+//
+// Lệnh "word" là cách kiểm chứng luồng UTF-8 chạy đúng với chữ BẤT KỲ chứ không chỉ mấy từ
+// dựng sẵn trong VOCAB — đúng việc mà MQTT sẽ làm sau này. Gõ tiếng Nhật vào Serial Monitor
+// cần bàn phím/IME tiếng Nhật; nếu không gõ được, cứ dùng danh sách VOCAB dựng sẵn.
 static void handleSerialCommand()
 {
   if (!Serial.available())
@@ -96,15 +180,28 @@ static void handleSerialCommand()
   }
   String line = Serial.readStringUntil('\n');
   line.trim();
-  if (!line.startsWith("face "))
+
+  if (line.startsWith("face "))
   {
+    String arg = line.substring(5);
+    arg.trim();
+    markUserAction();
+    displaySetExpression(arg.c_str());
     return;
   }
 
-  String arg = line.substring(5);
-  arg.trim();
-  markUserAction();
-  displaySetExpression(arg.c_str());
+  if (line.startsWith("word "))
+  {
+    String parts[3];
+    int count = splitWords(line.substring(5), parts, 3);
+    if (count == 0)
+    {
+      Serial.println("[main] Cu phap: word <tieng anh> <kanji> <kana>");
+      return;
+    }
+    markUserAction();
+    displaySetWord(parts[0].c_str(), parts[1].c_str(), parts[2].c_str());
+  }
 }
 
 void setup()
@@ -115,12 +212,14 @@ void setup()
   networkSetup();
   audioI2sSetup(); // module học I2S của Tuần 3 — xem audio_i2s.cpp để hiểu vì sao chưa đọc được âm thanh thật trong Wokwi
 
-  displaySetStats(DEMO_WORD, correctCount, wrongCount);
+  showVocabWord(vocabIndex);
+  displaySetScore(correctCount, wrongCount);
   displaySetExpression("neutral");
   lastUserActionMs = millis();
 
-  Serial.println("[main] San sang. Nut XANH = dung, nut DO = sai.");
+  Serial.println("[main] San sang. Nut XANH = dung, nut DO = sai (bam xong tu dong sang tu ke tiep).");
   Serial.println("[main] De yen ~6s robot se tu dien lan luot cac bieu cam.");
+  Serial.println("[main] Go 'face <ten>' hoac 'word <anh> <kanji> <kana>' de test thu cong.");
 
   // In lượng RAM trống còn lại sau khi mọi thứ đã khởi tạo xong (khung đệm màn hình 62KB,
   // WiFi, MQTT...). Nếu con số này tụt xuống dưới ~40KB thì cần lo: các thao tác mạng sau
@@ -141,16 +240,18 @@ void loop()
     markUserAction();
     correctCount++;
     displaySetExpression("happy");
-    displaySetStats(DEMO_WORD, correctCount, wrongCount);
+    displaySetScore(correctCount, wrongCount);
     publishResult("correct");
+    nextVocabWord();
   }
   else if (event == ButtonEvent::Wrong)
   {
     markUserAction();
     wrongCount++;
     displaySetExpression("sad");
-    displaySetStats(DEMO_WORD, correctCount, wrongCount);
+    displaySetScore(correctCount, wrongCount);
     publishResult("wrong");
+    nextVocabWord();
   }
 
   handleIdleFaces();

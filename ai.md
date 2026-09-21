@@ -118,6 +118,8 @@ Nhóm AI đã làm biểu cảm ở **2 nơi khác nhau**, ngoại hình không 
 
 Đây chỉ là **quan sát khách quan từ code**, Claude không tự sửa lại phần "Quyết định thu hẹp phạm vi" trong `PROJECT.md` vì đây là quyết định của cả nhóm, không phải điều Khoa (hay Claude) có thể tự quyết một mình. **Khoa nên trao đổi lại với nhóm** xem có nên cập nhật lại phần "Scope note" trong `README.md`/`CLAUDE.md`/`PROJECT.md` cho khớp thực tế hay không, để tránh ghi sai trong báo cáo cuối kỳ.
 
+**Cập nhật (21/09/2026):** nhóm đã quyết định thêm **tiếng Nhật** vào phạm vi dạy, song song với tiếng Anh (chi tiết ở `PROJECT.md` mục "Thêm lại tiếng Nhật vào phạm vi") — vẫn giữ mô hình một chiều robot → trẻ, không quay lại hội thoại Việt↔Nhật hai chiều như đề xuất gốc. Phần này chủ yếu ảnh hưởng tới firmware (font Kana trên màn hình) và dữ liệu từ vựng có gắn nhãn ngôn ngữ; **chưa rõ code AI (`brain.py`, `voice.py`, `llm.py`, `tts.py`) đã có sẵn phần xử lý tiếng Nhật hay chưa** — cần Khoa xác nhận lại với bạn phụ trách AI trước khi giả định STT/LLM/TTS trong `Panda-Robotics-Client-/` đã hỗ trợ song ngữ Anh/Nhật, vì tài liệu này chỉ tóm tắt code tại thời điểm đọc, chưa được cập nhật lại theo quyết định mở rộng phạm vi lần này.
+
 ## 9. Việc cần phối hợp giữa Khoa (firmware) và bạn AI
 
 - **Namespace MQTT**: khi ghép thật, đổi `firmware-demo/` từ `panda/demo/khoa/*` sang đúng chuẩn `panda/cmd/*` (nhận lệnh) + `panda/status` (gửi cảm biến) mà `brain.py`/`web/server.js` đang subscribe sẵn.
