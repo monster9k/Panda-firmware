@@ -139,6 +139,8 @@ Giả định cuối kỳ rơi vào khoảng cuối tháng 11/2026 (~3 tháng k�
 | 14 | 16/11–22/11 | *(Tuần đệm 1 — không code tính năng mới)* Thắng chủ trì viết tài liệu kỹ thuật phần firmware + quay video demo đầy đủ + chuẩn bị slide báo cáo -Thắng (chủ trì, đúng vai trò "Báo cáo"). Khoa hỗ trợ viết tài liệu kỹ thuật cho module mình phụ trách -Khoa. | Bản nháp tài liệu + video demo đầy đủ. |
 | 15 | 23/11–29/11 | *(Tuần đệm 2 — dự phòng)* Mỗi người fix bug phát sinh cuối cùng ở phần mình; Thắng chủ trì tổng duyệt báo cáo, chuẩn bị bảo vệ đồ án -Khoa & Thắng. | Báo cáo/bảo vệ cuối kỳ. |
 
+> **⚠️ Rủi ro Tuần 9 (14/10/2026):** kế hoạch ban đầu là mượn khung/đế robot có bánh xe sẵn ("bên tự động hóa" hoặc nguồn khác) để tiết kiệm mục #8 trong BOM (Kit khung 2WD, 110k). Việc mượn **bị từ chối** — nhóm hiện **không có khung/bánh/motor nào cả**, phải mua mới hoàn toàn từ đầu. Đây là rủi ro tiến độ cho đúng mốc Tuần 9 (chuyển sang phần cứng thật) — cần đặt mua **Kit khung 2WD TT motor** (đúng mục #8 trong `README.md` BOM) càng sớm càng tốt vì thời gian ship hàng có thể trễ. Nếu hàng không về kịp trong tuần, báo trước với thầy và dùng phương án "báo cáo rủi ro nếu chưa có board" đã ghi sẵn trong cột kết quả Tuần 9 ở trên.
+
 Checklist nhanh mỗi tuần (lặp lại):
 - [ ] Đầu tuần: đọc lại dòng tương ứng trong bảng trên, xác nhận mục tiêu tuần.
 - [ ] Giữa tuần: code + test trên Wokwi (hoặc board thật từ Tuần 9).

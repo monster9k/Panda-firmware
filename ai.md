@@ -45,7 +45,7 @@ Panda-Robotics-Client-/
 │   ├── voice.py        (866 dòng) # VAD streaming + wake-word 3 lớp + Groq Whisper STT
 │   ├── llm.py           (365 dòng) # gọi Groq/DeepSeek, stream câu trả lời
 │   ├── tts.py           (476 dòng) # Fish Audio TTS streaming
-│   ├── vision.py        (218 dòng) # face/emotion/pose detection (OpenCV + YOLOv8)
+│   ├── vision.py        (218 dòng) # (bản cũ) — từ 09/2026 đã tách thành package server/vision/, xem mục 10
 │   ├── topics.py         (86 dòng) # phân loại 24 chủ đề bằng keyword
 │   ├── wakeword.py      (123 dòng) # Porcupine on-device wake-word (tùy chọn) + fallback Whisper
 │   ├── mqtt_bridge.py     (29 dòng) # wrapper publish() MQTT, dùng chung cho mọi module
@@ -126,3 +126,126 @@ Nhóm AI đã làm biểu cảm ở **2 nơi khác nhau**, ngoại hình không 
 - **Broker**: đổi từ `broker.hivemq.com` (demo công cộng) sang broker tự host mà nhóm AI dùng (`localhost:1883`, hoặc VPS thật khi có).
 - **Biểu cảm khuôn mặt**: dùng chung 1 bộ tên biểu cảm (`neutral/happy/sad/angry/surprised/sleepy/wink/love/cool/cute/dizzy/questioning/hearing/thinking/speaking`) **và** bảng màu RGB565 giữa firmware của Khoa và payload `panda/cmd/face` mà brain.py publish — đã port ở Tuần 3 và viết lại cho màn ILI9341 ở Tuần 4, xem `WEEKLY_LOGIC.md`. Lưu ý một khác biệt nhỏ về tên: bản của nhóm AI dùng `ai-thinking`, firmware của Khoa nhận cả `thinking` lẫn `ai-thinking` để khỏi lệch.
 - **Chân GPIO**: thống nhất lại bảng chân giữa 2 board HEAD/BODY thật trước khi ai đó nạp cả 2 sketch lên cùng 1 board test nhanh (xem mục 6).
+
+## 10. Nhận diện cảm xúc — code mới nhất của Thái (đọc ngày 29/09/2026, `develop` @ `99e6c92`)
+
+### 10.1. Code nằm ở đâu
+
+`vision.py` cũ đã được Thái tách thành package `server/vision/`. Những file liên quan tới cảm xúc:
+
+| File | Vai trò |
+|---|---|
+| `server/vision/pipeline/engine.py` | `VisionEngine.process(frame)` — nhận 1 ảnh, trả về dict kết quả (khung mặt, cảm xúc, % từng cảm xúc…) |
+| `server/vision/face/analysis.py` | Toàn bộ **luật quyết định cảm xúc**: `FaceDetails` (gọi MediaPipe), `expression_intensities`, `combined_emotion_scores`, `emotion_candidate`, `ExpressionState` |
+| `server/vision/runtime/camera.py` | 2 luồng chạy song song: đọc camera (chỉ giữ ảnh mới nhất) và chạy AI; publish MQTT |
+| `config/settings.py` | Mọi ngưỡng/nhịp: `VISION_EMOTION_THRESHOLD=0.55`, `VISION_EMOTION_MARGIN=0.15`, `VISION_EMOTION_FPS=3`, `VISION_MIN_FACE_SIZE=60`… |
+| `docs/vision.md` | Tài liệu của chính Thái (có kịch bản test, số đo hiệu năng) |
+
+### 10.2. Thái có "train" AI không? — Không
+
+Thái **không tự train mô hình nào**. Hệ thống ghép **3 mô hình người khác đã train sẵn** + **luật tự viết** (ngưỡng chỉnh tay) để quyết định cảm xúc:
+
+| Mô hình (file) | Của ai, train trên gì | Dùng để làm gì |
+|---|---|---|
+| **YuNet** (`face_detection_yunet_2023mar.onnx`, 0,2MB) | OpenCV Zoo | Tìm khung mặt trong ảnh (thu nhỏ còn 320px cho nhanh) |
+| **FER+** (`emotion-ferplus-8.onnx`, 35MB) | Microsoft. Mạng CNN train trên bộ **FER2013** (~35.000 ảnh mặt xám từ internet), nhãn được **gán lại bởi 10 người/ảnh** (vì thế gọi là FER+) | Nhìn ảnh mặt xám 64×64 → xác suất 8 cảm xúc: `neutral, happy, surprised, sad, angry, disgust, fear, contempt` |
+| **MediaPipe Face Landmarker** (`face_landmarker.task`, 3,8MB) | Google | 478 điểm mốc trên mặt + **52 "blendshape"** = điểm 0→1 cho từng cơ mặt (`mouthSmile`, `browDown`, `jawOpen`, `eyeWide`…) và góc quay đầu |
+
+Phần "trí tuệ" Thái tự thêm là **cách kết hợp** FER+ với cơ mặt MediaPipe, vì FER+ hay "nuốt" các biểu cảm nhẹ vào `neutral`.
+
+### 10.3. Mỗi khung hình chạy qua những bước nào
+
+```
+Ảnh 640×480 ─► YuNet tìm mặt (~10 lần/giây)
+                 │ không thấy mặt / mặt < 60px ─► xoá lịch sử, emotion = "unknown"
+                 ▼
+   ┌─────────────┴─────────────┐
+   ▼                           ▼
+MediaPipe: 52 cơ mặt       FER+ (chỉ ~3 lần/giây vì nặng): cắt mặt vuông có
+(mỗi khung)                 đệm 12% (không kéo méo) → xám 64×64 → 8 xác suất,
+   │                        làm mượt: 65% lần mới + 35% lần trước
+   ▼                           │
+7 "mức kích hoạt" cơ mặt ──────┤
+   ▼                           ▼
+       ExpressionState: chọn nhãn theo thứ tự ưu tiên (10.4)
+       + phải GIỮ đủ lâu mới công nhận ─► emotion, emotion_source, emotion_scores
+```
+
+**7 mức kích hoạt cơ mặt** (`expression_intensities`, mỗi cái 0→1, không cộng lại thành 100%):
+
+| Cảm xúc | Công thức (từ 52 blendshape) | Nghĩa là mặt phải làm gì |
+|---|---|---|
+| Vui | `smile` | Kéo 2 khoé miệng lên |
+| Ngạc nhiên | `min(jawOpen, max(eyeWide, browOuterUp))` | Há miệng **VÀ** (mở to mắt hoặc nhướng mày) — thiếu 1 trong 2 là ≈ 0 |
+| Giận | `√(browDown × max(eyeSquint, mouthPress))` | Cau mày kéo xuống **VÀ** (nheo mắt hoặc mím môi) |
+| Buồn | `√(browInnerUp × mouthFrown)` | Nhướng **phần trong** chân mày **VÀ** trễ khoé miệng xuống |
+| Ghê tởm | `√(noseSneer × mouthUpperUp)` | Nhăn mũi **VÀ** nhếch môi trên |
+| Sợ | `∛(max(browInnerUp, browOuterUp) × eyeWide × max(jawOpen, mouthStretch))` | Nhướng mày **VÀ** mở to mắt **VÀ** (há/kéo căng miệng) |
+| Khinh | `√(max(smileL, smileR) × \|smileL − smileR\|)` | Cười **lệch 1 bên** |
+
+Dùng phép nhân/căn là cố ý: **mọi cơ mặt cần thiết phải cùng động**, chỉ 1 cơ động thì điểm vẫn thấp → bớt nhận nhầm.
+
+### 10.4. Luật chọn cảm xúc cuối cùng (`ExpressionState.update`)
+
+Xét lần lượt, gặp điều kiện nào đúng trước thì lấy; nhãn phải **giữ nguyên liên tục** trong khoảng "giữ" mới được công nhận (chống nhảy nhãn):
+
+| # | Điều kiện | Kết quả | Giữ |
+|---|---|---|---|
+| 1 | FER+ **chắc chắn**: nhãn cao nhất ≥ 55% và hơn nhãn thứ 2 ≥ 15 điểm, và không phải `neutral` | nhãn FER+ (`source=fer`) | 0,30s |
+| 2 | FER+ xếp buồn/giận/ghê/sợ/khinh trong **top 2** (≥ 12%) **và** cơ mặt MediaPipe xác nhận đúng cảm xúc đó | nhãn đó (`fer+landmarks`) | 0,45s |
+| 3 | Chỉ riêng cơ mặt: vui ≥ .45 · ngạc nhiên ≥ .30 · giận ≥ .30 và browDown ≥ .42 · buồn ≥ .24 và browInnerUp ≥ .30 · ghê ≥ .24 · sợ ≥ .20 · khinh ≥ .25 | nhãn đó (`landmarks`) | vui/ngạc nhiên 0,18s · ghê/sợ 0,55s · giận/buồn/khinh 0,65s |
+| 4 | FER+ chắc chắn là `neutral` | `neutral` | 0,30s |
+| 5 | Không có gì đủ chắc | `unknown` (nhãn đã công nhận chỉ được giữ thêm tối đa 0,6s) | — |
+
+Riêng **% hiển thị** (`emotion_scores`, cái dashboard in "Vui (60%)") = **75% FER+ + 25% cơ mặt**, và điểm `neutral` bị giảm khi mặt đang cử động. Đây là độ tin cậy ước lượng, **không** phải thứ quyết định nhãn — nhãn do bảng 10.4 quyết định.
+
+Thái tự ghi rõ trong `docs/vision.md`: **chưa có bộ video gán nhãn để đo độ chính xác**; kết quả là "biểu cảm nhìn thấy", không khẳng định cảm xúc thật trong lòng.
+
+### 10.5. Kết quả được dùng thế nào trong hệ thống của Thái
+
+- Publish lên MQTT `panda/vision/status` (+ `panda/user_status` cho tương thích), dashboard web hiện nhãn + %.
+- Gọi `brain.on_vision_update(person_detected, emotion, action)`. Robot **nhại cảm xúc** người dùng lên mặt chỉ khi bật `EMOTION_MIRROR = True` (**mặc định TẮT** — Moon tự diễn idle), và bản của Thái chỉ nhại **4 cảm xúc** (vui/buồn/giận/ngạc nhiên, còn lại → `neutral`), cảm xúc mới phải giữ **1,5 giây** mới đổi mặt, gửi qua topic `panda/cmd/face`.
+
+### 10.6. Cách test để AI nhận đúng (làm theo đúng công thức 10.3)
+
+Chuẩn bị: ngồi cách camera **40–100cm** (mặt phải ≥ 60px mới chạy FER+), **đủ sáng, sáng từ phía trước**, nhìn thẳng, **chỉ 1 người** trong khung. FER+ học từ ảnh internet — **làm hơi "quá lố"** như diễn kịch sẽ dễ nhận hơn biểu cảm tự nhiên nhẹ.
+
+| Muốn AI thấy | Làm thế này | Độ khó |
+|---|---|---|
+| Vui | Cười tươi thấy răng, kéo cao 2 khoé miệng | Dễ nhất |
+| Ngạc nhiên | Há miệng **cùng lúc** mở to mắt + nhướng mày | Dễ |
+| Bình thường | Mặt thả lỏng, miệng khép | Dễ |
+| Giận | Cau mày kéo **thấp và sát** 2 chân mày + nheo mắt hoặc mím chặt môi, **giữ ~1 giây** | Vừa |
+| Buồn | Nhướng **đầu trong** chân mày (mày hình "/ \\") + trễ 2 khoé miệng xuống, **giữ ~1 giây** | Khó nhất |
+| Ghê tởm | Nhăn mũi + nhếch môi trên (như ngửi mùi hôi) | Vừa |
+| Sợ | Nhướng mày + trợn mắt + kéo căng/há miệng | Khó |
+| Khinh | Nhếch **1 bên** khoé miệng | Vừa |
+
+Mẹo: bảng "Dấu hiệu cơ mặt" trong `cam-emotion` cho thấy cơ nào đang lên — nếu Buồn không nhận, nhìn thanh Buồn để biết đang thiếu nhướng mày hay thiếu trễ miệng.
+
+### 10.7. Ghép vào robot của Khoa — thư mục `MOON/cam-emotion/`
+
+```
+ESP32-S3: camera OV5640 ──USB 4Mbaud──► laptop: emotion_viewer.py
+   ▲                                         │ import NGUYÊN VẸN VisionEngine của Thái
+   │                                         │ (tắt pose/tay/đồ vật = không cần torch)
+   └── "face <tên> <chữ>\n" ◄────────────────┘ đổi nhãn → mặt robot
+màn TFT vẽ mặt tương ứng + chữ chú thích
+```
+
+Không sửa file nào của Thái; chỉ tắt 3 công tắc `VISION_POSE/HANDS/OBJECTS_ENABLED` lúc chạy. Bảng đổi nhãn (khác bản mirror 4 cảm xúc của Thái — ở đây nhại đủ 8 để dễ test):
+
+| Nhãn của Thái | Mặt robot (bộ 15 tên chung) | Chữ trên TFT |
+|---|---|---|
+| `neutral` | `neutral` | BINH THUONG |
+| `happy` | `happy` | VUI |
+| `surprised` | `surprised` | NGAC NHIEN |
+| `sad` | `sad` | BUON |
+| `angry` | `angry` | GIAN |
+| `disgust` | `dizzy` | GHE |
+| `fear` | `questioning` | SO |
+| `contempt` | `cool` | KHINH |
+| `unknown` (có mặt, chưa chắc) | `thinking` | CHUA RO |
+| không thấy mặt | `sleepy` | KHONG THAY AI |
+
+Khi ghép MQTT thật sau này: bỏ đường USB, để `brain.py` publish `panda/cmd/face` như cũ — firmware chỉ cần gọi `faceSetExpression()` với tên nhận được.
