@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moon Wiring Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: bàn làm việc kỹ thuật — 1 cột đọc, các bản vẽ rộng cuộn ngang trong khung riêng */
+:root {
+  --bg: #eef1ec; --panel: #fbfcfa; --ink: #18211c; --muted: #5a675f; --line: #cfd8d1;
+  --accent: #1d6b47; --accent-soft: #dcefe4; --copper: #a8641f;
+  --pwr: #d23a2c; --v33: #e08a12; --gnd: #2a2f2c;
+  --sig1: #2f6fd0; --sig2: #7a45c4; --sig3: #13897a; --sig4: #c2417f;
+  --board: #23302a; --board-ink: #e6efe9; --module: #1f4f9a; --module-ink: #eef4ff;
+  --warn: #9a5b00; --warnbg: #fff3dc; --bad: #b42318; --badbg: #fde9e7; --okbg: #e3f4ea;
+  --shell: #f7f3ea; --shell-edge: #b9b1a1; --screen: #0a1020; --eye: #29c6ff;
+  --ground: #dcd3c1; --bb: #f5f2ea; --bb-edge: #cfc8b8; --hole: #3b3b3b; --bb-ink: #8b8577;
+  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1512; --panel: #161e1a; --ink: #e2eae4; --muted: #9aa8a0; --line: #2c3832;
+  --accent: #52c48c; --accent-soft: #1d3329; --copper: #dd9c5c;
+  --pwr: #ff6b5c; --v33: #f2a33a; --gnd: #c9d1cc;
+  --sig1: #6aa2ff; --sig2: #b48cff; --sig3: #3fc9b6; --sig4: #f07bb3;
+  --board: #0b110e; --board-ink: #dbe6df; --module: #2a63bd; --module-ink: #eef4ff;
+  --warn: #f2b45a; --warnbg: #33270f; --bad: #ff8b7d; --badbg: #3a1714; --okbg: #17301f;
+  --shell: #e9e2d2; --shell-edge: #8e8676; --screen: #050912; --eye: #29c6ff;
+  --ground: #d9d0bd; --bb: #ece8de; --bb-edge: #b8b1a1; --hole: #3b3b3b; --bb-ink: #8b8577;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1512; --panel: #161e1a; --ink: #e2eae4; --muted: #9aa8a0; --line: #2c3832;
+  --accent: #52c48c; --accent-soft: #1d3329; --copper: #dd9c5c;
+  --pwr: #ff6b5c; --v33: #f2a33a; --gnd: #c9d1cc;
+  --sig1: #6aa2ff; --sig2: #b48cff; --sig3: #3fc9b6; --sig4: #f07bb3;
+  --board: #0b110e; --board-ink: #dbe6df; --module: #2a63bd; --module-ink: #eef4ff;
+  --warn: #f2b45a; --warnbg: #33270f; --bad: #ff8b7d; --badbg: #3a1714; --okbg: #17301f;
+  --shell: #e9e2d2; --shell-edge: #8e8676; --screen: #050912; --eye: #29c6ff;
+  --ground: #d9d0bd; --bb: #ece8de; --bb-edge: #b8b1a1; --hole: #3b3b3b; --bb-ink: #8b8577;
+  color-scheme: dark; }
+
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: .3px; }
+h2 { font-size: 28px; margin-top: 44px; display: flex; gap: 12px; align-items: baseline; }
+h2 .no { font-family: var(--f-mono); font-size: 14px; color: var(--accent); letter-spacing: 1px; }
+h3 { font-size: 20px; margin: 22px 0 8px; }
+p { margin: 8px 0; max-width: 75ch; }
+.lead { color: var(--muted); font-size: 16px; margin-top: 10px; }
+code, .mono { font-family: var(--f-mono); font-size: .86em; }
+.tag { display: inline-block; font-family: var(--f-mono); font-size: 11px; font-weight: 600; letter-spacing: .4px;
+  padding: 1px 7px; border-radius: 10px; white-space: nowrap; }
+.t-bom { background: var(--accent-soft); color: var(--accent); }
+.t-add { background: var(--badbg); color: var(--bad); }
+.t-rec { background: var(--warnbg); color: var(--warn); }
+
+/* Tóm tắt đầu trang */
+.meta { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 18px; font-size: 14px; color: var(--muted); }
+.meta b { color: var(--ink); font-family: var(--f-mono); font-weight: 600; }
+.callout { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 14px 18px; margin: 16px 0; }
+.callout.warn { border-color: var(--warn); background: var(--warnbg); }
+.callout ul { margin: 6px 0 0; padding-left: 20px; }
+.callout li { margin: 4px 0; }
+
+/* Checklist */
+.progress { display: flex; align-items: center; gap: 14px; margin: 14px 0 6px; flex-wrap: wrap; }
+.bar { flex: 1 1 220px; height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; min-width: 0; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+.count { font-family: var(--f-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+.reset { font: inherit; font-size: 13px; background: none; border: 1px solid var(--line); color: var(--muted);
+  border-radius: 4px; padding: 3px 10px; cursor: pointer; }
+.reset:hover, .reset:focus-visible { color: var(--ink); border-color: var(--ink); }
+.group-h { font-family: var(--f-display); font-size: 19px; font-weight: 600; margin: 22px 0 6px;
+  display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.group-h small { font-family: var(--f-body); font-size: 13px; color: var(--muted); font-weight: 400; }
+.items { display: grid; gap: 8px; }
+.item { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 4px 10px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 6px; padding: 11px 14px; }
+.item.done { background: var(--okbg); }
+.item input { width: 19px; height: 19px; margin: 3px 0 0; accent-color: var(--accent); cursor: pointer; }
+.item input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.item .top { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.item .name { font-weight: 700; font-size: 16px; cursor: pointer; }
+.item .qty { font-family: var(--f-mono); font-size: 13px; color: var(--copper); font-weight: 600; }
+.item dl { grid-column: 2; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 2px 12px; margin: 4px 0 0; font-size: 14px; }
+.item dt { color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .5px; padding-top: 2px; }
+.item dd { margin: 0; }
+@media (max-width: 560px) { .item dl { grid-template-columns: 1fr; } .item dt { padding-top: 6px; } }
+
+/* Bản vẽ */
+.drawing { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow-x: auto; margin: 12px 0; }
+.drawing svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+.drawing.robot svg { min-width: 760px; }
+svg text { font-family: var(--f-body); fill: var(--ink); }
+svg .mono { font-family: var(--f-mono); }
+svg .lbl { font-size: 13px; }
+svg .small { font-size: 11px; fill: var(--muted); }
+svg .brd { fill: var(--board); }
+svg .brd-t { fill: var(--board-ink); }
+svg .mod { fill: var(--module); }
+svg .mod-t { fill: var(--module-ink); }
+svg .pin { fill: #d9b44a; }
+svg .w { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+svg .w-pwr { stroke: var(--pwr); } svg .w-33 { stroke: var(--v33); } svg .w-gnd { stroke: var(--gnd); }
+svg .w-s1 { stroke: var(--sig1); } svg .w-s2 { stroke: var(--sig2); } svg .w-s3 { stroke: var(--sig3); } svg .w-s4 { stroke: var(--sig4); }
+svg .wifi { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 7 6; }
+svg .rec { fill: none; stroke: var(--warn); stroke-width: 2.5; stroke-dasharray: 8 6; }
+svg .flag-pwr { fill: var(--pwr); } svg .flag-33 { fill: var(--v33); } svg .flag-gnd { fill: var(--gnd); }
+svg .flag-t { fill: #fff; font-family: var(--f-mono); font-size: 10.5px; font-weight: 600; }
+svg .flag-tg { fill: var(--bg); font-family: var(--f-mono); font-size: 10.5px; font-weight: 600; }
+svg .res { fill: var(--panel); stroke: var(--copper); stroke-width: 2; }
+svg .zone { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 5; }
+svg .zone-t { font-family: var(--f-display); font-size: 22px; font-weight: 700; fill: var(--muted); letter-spacing: 1px; }
+svg .note-box { fill: var(--warnbg); stroke: var(--warn); stroke-width: 1.2; }
+svg .shell { fill: var(--shell); stroke: var(--shell-edge); stroke-width: 2.5; }
+svg .shell2 { fill: var(--shell); stroke: var(--shell-edge); stroke-width: 2; opacity: .55; }
+svg .screen { fill: var(--screen); }
+svg .eye { fill: var(--eye); }
+svg .tire { fill: var(--gnd); }
+svg .hub { fill: #9aa39e; }
+svg .lead-l { stroke: var(--muted); stroke-width: 1.2; fill: none; }
+svg .acry { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+svg .cell { fill: #4b8d5f; stroke: var(--gnd); stroke-width: 1; }
+svg .dim { stroke: var(--copper); stroke-width: 1.2; fill: none; }
+svg .dim-t { fill: var(--copper); font-family: var(--f-mono); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 22px; height: 4px; border-radius: 2px; display: inline-block; }
+
+/* Bảng chân */
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 8px 0 4px; background: var(--panel); }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { font-family: var(--f-display); font-size: 15px; font-weight: 600; letter-spacing: .3px; background: var(--accent-soft); }
+td.gp { font-family: var(--f-mono); font-weight: 600; white-space: nowrap; color: var(--accent); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 18px; }
+.cols > div { min-width: 0; }
+.drawing.bbd { background: var(--ground); }
+.drawing.bbd svg { min-width: 1150px; }
+.drawing.bbd svg text { fill: #22201b; }
+.drawing.bbd svg text.lt { fill: #f3f6f4; }
+.bb-cap { font-family: var(--f-display); font-size: 19px; font-weight: 600; margin: 22px 0 4px; }
+ul.notes { max-width: 90ch; padding-left: 20px; }
+ul.notes li { margin: 5px 0; }
+ol.steps { padding-left: 22px; max-width: 80ch; }
+ol.steps li { margin: 8px 0; }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+
+/* bổ sung cho trang nối dây */
+svg .w-s5 { stroke: var(--copper); }
+svg .w-unk { stroke: var(--warn); stroke-dasharray: 7 6; }
+svg .w-s1.w-unk { stroke: var(--sig1); }
+.drawing.full svg { min-width: 1200px; }
+table.wires td:nth-child(2) { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
+table.wires td:nth-child(2) label { cursor: pointer; }
+table.wires td:nth-child(3) { white-space: nowrap; }
+table.wires .to { font-family: var(--f-mono); font-weight: 600; color: var(--accent); }
+table.wires td:nth-child(4) { min-width: 260px; color: var(--muted); }
+th.ck, td.ck { width: 34px; text-align: center; }
+td.ck input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); cursor: pointer; }
+td.ck input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+tr.done td { background: var(--okbg); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+table.todo td:first-child { font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Robot Moon — sơ đồ nối dây toàn bộ</h1>
+  <p class="lead">Vẽ lại từ bảng chân trong Google Sheet của nhóm (đọc ngày 16/11/2026). Mọi khối đều nối về một board ESP32-S3. Chỗ nào sheet còn trống thì bản vẽ dùng nét đứt cam và ghi chân đề xuất, để nhóm chốt trước khi hàn.</p>
+  <div class="meta">
+    <span>Board: <b>1 × ESP32-S3</b></span>
+    <span>Khối: <b>màn ST7789 · thẻ SD · mic · loa · Bluetooth · nút · nguồn</b></span>
+    <span>GPIO đã chốt: <b>14</b></span>
+    <span>Ô sheet còn trống: <b>8 dây</b> + loại pin</span>
+  </div>
+
+  <div class="callout warn">
+    <b>5 điểm cần biết trước khi nối</b>
+    <ul>
+      <li><b>Pin phải trên ~6,5V.</b> Mạch hạ áp chỉ hạ điện áp xuống, không nâng lên. Pin 1 cell (3,7V) sẽ không ra được 5V. Cần pin 2 cell nối tiếp (7,4V) và mạch sạc loại 2S.</li>
+      <li><b>Bluetooth không kéo loa trực tiếp được.</b> AUDIO_L/R là tín hiệu analog nhỏ. MAX98357 chỉ nhận âm thanh số I2S từ ESP32, nên cũng không nhận được 2 dây này. Không nối chung ngõ ra của 2 mạch khuếch đại vào cùng một loa.</li>
+      <li><b>Đo chân D của mạch sạc trước khi nối GPIO 3.</b> Trở 10K chỉ hạn dòng. Chân D ra 5V thì ESP32 vẫn bị quá áp, phải chia áp như chân đo pin.</li>
+      <li><b>Thẻ SD và I2C chưa có chân.</b> Bản vẽ đề xuất SD MISO = GPIO 11, SD CS = GPIO 12, SDA = GPIO 17, SCL = GPIO 21 (đều đang trống trên ESP32-S3). Nhóm đồng ý thì điền vào sheet.</li>
+      <li><b>Tắt SWITCH 1 khi cắm USB nạp code.</b> Lúc đó board nhận 5V từ cả USB lẫn mạch hạ áp. Hai nguồn 5V không được đấu vào nhau.</li>
+    </ul>
+  </div>
+
+  <!-- ============ 1. BẢNG NỐI ============ -->
+  <h2><span class="no">01</span> Bảng nối chân — tích từng dây đã nối</h2>
+  <p>Mỗi dòng là một dây, theo đúng thứ tự trong sheet. Nhãn <span class="tag t-bom">theo sheet</span> là chân nhóm đã ghi; <span class="tag t-add">chưa điền · đề xuất</span> là ô sheet còn trống, chân ở đây là đề xuất; <span class="tag t-rec">suy ra</span> là ô trống nhưng tên chân đã nói rõ cách nối. Dấu tích chỉ lưu trên trình duyệt của máy bạn.</p>
+  <div class="progress">
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <span class="count" id="count">0 / 61</span>
+    <button class="reset" id="reset" type="button">Bỏ hết dấu tích</button>
+  </div>
+  <div id="checklist">
+<div class="group-h">Màn TFT 2.8&quot; ST7789 · SPI <small>9 chân · sheet mục 1</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="tft-mosi"><td class="ck"><input type="checkbox" id="c-tft-mosi" aria-label="Đã nối MOSI/SDA tới GPIO 10"></td><td><label for="c-tft-mosi">MOSI/SDA</label></td><td><span class="to">GPIO 10</span> <span class="tag t-bom">theo sheet</span></td><td>Dữ liệu SPI. Chữ SDA in trên màn không phải I2C.</td></tr>
+<tr data-id="tft-sck"><td class="ck"><input type="checkbox" id="c-tft-sck" aria-label="Đã nối SCK/SCL tới GPIO 9"></td><td><label for="c-tft-sck">SCK/SCL</label></td><td><span class="to">GPIO 9</span> <span class="tag t-bom">theo sheet</span></td><td>Xung nhịp SPI, dùng chung với thẻ SD.</td></tr>
+<tr data-id="tft-dc"><td class="ck"><input type="checkbox" id="c-tft-dc" aria-label="Đã nối DC tới GPIO 8"></td><td><label for="c-tft-dc">DC</label></td><td><span class="to">GPIO 8</span> <span class="tag t-bom">theo sheet</span></td><td>Báo màn biết byte đang gửi là lệnh hay dữ liệu điểm ảnh.</td></tr>
+<tr data-id="tft-cs"><td class="ck"><input type="checkbox" id="c-tft-cs" aria-label="Đã nối CS tới GPIO 14"></td><td><label for="c-tft-cs">CS</label></td><td><span class="to">GPIO 14</span> <span class="tag t-bom">theo sheet</span></td><td>Chọn màn trên bus SPI. Phải khác chân CS của thẻ SD.</td></tr>
+<tr data-id="tft-rst"><td class="ck"><input type="checkbox" id="c-tft-rst" aria-label="Đã nối RESET/RES tới GPIO 18"></td><td><label for="c-tft-rst">RESET/RES</label></td><td><span class="to">GPIO 18</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="tft-led"><td class="ck"><input type="checkbox" id="c-tft-led" aria-label="Đã nối LED tới GPIO 13"></td><td><label for="c-tft-led">LED</label></td><td><span class="to">GPIO 13</span> <span class="tag t-bom">theo sheet</span></td><td>Đèn nền. Code phải đưa chân này lên HIGH thì màn mới sáng.</td></tr>
+<tr data-id="tft-vcc"><td class="ck"><input type="checkbox" id="c-tft-vcc" aria-label="Đã nối VCC tới 5V"></td><td><label for="c-tft-vcc">VCC</label></td><td><span class="to">5V</span> <span class="tag t-bom">theo sheet</span></td><td>Được nếu mạch màn có IC ổn áp 3,3V nhỏ 3 chân. Không có IC đó thì cấp 3V3.</td></tr>
+<tr data-id="tft-gnd"><td class="ck"><input type="checkbox" id="c-tft-gnd" aria-label="Đã nối GND tới GND"></td><td><label for="c-tft-gnd">GND</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="tft-miso"><td class="ck"><input type="checkbox" id="c-tft-miso" aria-label="Đã nối MISO tới để trống"></td><td><label for="c-tft-miso">MISO</label></td><td><span class="to">để trống</span> <span class="tag t-bom">theo sheet</span></td><td>Màn chỉ nhận dữ liệu, không gửi về.</td></tr>
+</tbody></table></div>
+<div class="group-h">Thẻ nhớ SD · SPI dùng chung <small>4 chân · sheet chưa điền GPIO</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="sd-sck"><td class="ck"><input type="checkbox" id="c-sd-sck" aria-label="Đã nối SCK tới GPIO 9"></td><td><label for="c-sd-sck">SCK</label></td><td><span class="to">GPIO 9</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td>Nối chung dây SCK với màn.</td></tr>
+<tr data-id="sd-mosi"><td class="ck"><input type="checkbox" id="c-sd-mosi" aria-label="Đã nối MOSI tới GPIO 10"></td><td><label for="c-sd-mosi">MOSI</label></td><td><span class="to">GPIO 10</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td>Nối chung dây MOSI với màn.</td></tr>
+<tr data-id="sd-miso"><td class="ck"><input type="checkbox" id="c-sd-miso" aria-label="Đã nối MISO tới GPIO 11"></td><td><label for="c-sd-miso">MISO</label></td><td><span class="to">GPIO 11</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td>Thẻ SD cần gửi dữ liệu về, nên dây này bắt buộc.</td></tr>
+<tr data-id="sd-cs"><td class="ck"><input type="checkbox" id="c-sd-cs" aria-label="Đã nối CS tới GPIO 12"></td><td><label for="c-sd-cs">CS</label></td><td><span class="to">GPIO 12</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td>Mỗi thiết bị trên bus SPI có chân CS riêng.</td></tr>
+</tbody></table></div>
+<div class="group-h">Mic I2S <small>6 chân · sheet mục 3</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="mic-ws"><td class="ck"><input type="checkbox" id="c-mic-ws" aria-label="Đã nối WS tới GPIO 4"></td><td><label for="c-mic-ws">WS</label></td><td><span class="to">GPIO 4</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="mic-sck"><td class="ck"><input type="checkbox" id="c-mic-sck" aria-label="Đã nối SCK tới GPIO 5"></td><td><label for="c-mic-sck">SCK</label></td><td><span class="to">GPIO 5</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="mic-sd"><td class="ck"><input type="checkbox" id="c-mic-sd" aria-label="Đã nối SD tới GPIO 6"></td><td><label for="c-mic-sd">SD</label></td><td><span class="to">GPIO 6</span> <span class="tag t-bom">theo sheet</span></td><td>Dữ liệu âm thanh từ mic vào ESP32.</td></tr>
+<tr data-id="mic-lr"><td class="ck"><input type="checkbox" id="c-mic-lr" aria-label="Đã nối L/R tới GND"></td><td><label for="c-mic-lr">L/R</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td>Nối GND để mic phát ở kênh trái.</td></tr>
+<tr data-id="mic-vdd"><td class="ck"><input type="checkbox" id="c-mic-vdd" aria-label="Đã nối VDD tới 3V3"></td><td><label for="c-mic-vdd">VDD</label></td><td><span class="to">3V3</span> <span class="tag t-bom">theo sheet</span></td><td>Mic chỉ chịu 3,3V. Đừng cắm 5V.</td></tr>
+<tr data-id="mic-gnd"><td class="ck"><input type="checkbox" id="c-mic-gnd" aria-label="Đã nối GND tới GND"></td><td><label for="c-mic-gnd">GND</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+</tbody></table></div>
+<div class="group-h">Loa · MAX98357 <small>8 chân · sheet mục 3</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="amp-lrc"><td class="ck"><input type="checkbox" id="c-amp-lrc" aria-label="Đã nối LRC/LRCK tới GPIO 15"></td><td><label for="c-amp-lrc">LRC/LRCK</label></td><td><span class="to">GPIO 15</span> <span class="tag t-bom">theo sheet</span></td><td>Mic và loa dùng chân clock riêng, nên chạy trên 2 cổng I2S khác nhau (ESP32-S3 có I2S0 và I2S1).</td></tr>
+<tr data-id="amp-bclk"><td class="ck"><input type="checkbox" id="c-amp-bclk" aria-label="Đã nối BCLK/BCK tới GPIO 16"></td><td><label for="c-amp-bclk">BCLK/BCK</label></td><td><span class="to">GPIO 16</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="amp-din"><td class="ck"><input type="checkbox" id="c-amp-din" aria-label="Đã nối DIN tới GPIO 7"></td><td><label for="c-amp-din">DIN</label></td><td><span class="to">GPIO 7</span> <span class="tag t-bom">theo sheet</span></td><td>Dữ liệu âm thanh từ ESP32 ra loa.</td></tr>
+<tr data-id="amp-gain"><td class="ck"><input type="checkbox" id="c-amp-gain" aria-label="Đã nối GAIN tới GND"></td><td><label for="c-amp-gain">GAIN</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td>Mức khuếch đại 12dB.</td></tr>
+<tr data-id="amp-sd"><td class="ck"><input type="checkbox" id="c-amp-sd" aria-label="Đã nối SD tới VIN"></td><td><label for="c-amp-sd">SD</label></td><td><span class="to">VIN</span> <span class="tag t-bom">theo sheet</span></td><td>SD nối thẳng VIN: mạch luôn bật và phát kênh trái.</td></tr>
+<tr data-id="amp-vin"><td class="ck"><input type="checkbox" id="c-amp-vin" aria-label="Đã nối VIN tới SWITCH 2 · chân 1"></td><td><label for="c-amp-vin">VIN</label></td><td><span class="to">SWITCH 2 · chân 1</span> <span class="tag t-bom">theo sheet</span></td><td>Có điện khi gạt SWITCH 2 về phía loa.</td></tr>
+<tr data-id="amp-gnd"><td class="ck"><input type="checkbox" id="c-amp-gnd" aria-label="Đã nối GND tới GND"></td><td><label for="c-amp-gnd">GND</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="amp-spk"><td class="ck"><input type="checkbox" id="c-amp-spk" aria-label="Đã nối Loa + / − tới cầu đấu MAX98357"></td><td><label for="c-amp-spk">Loa + / −</label></td><td><span class="to">cầu đấu MAX98357</span> <span class="tag t-rec">suy ra</span></td><td>Sheet không ghi dòng này. Không nối cực nào của loa xuống GND.</td></tr>
+</tbody></table></div>
+<div class="group-h">Bluetooth · mạch giải mã <small>5 chân · sheet mục 3</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="bt-5v"><td class="ck"><input type="checkbox" id="c-bt-5v" aria-label="Đã nối 5V tới 5V · qua SWITCH 2 chân 3"></td><td><label for="c-bt-5v">5V</label></td><td><span class="to">5V · qua SWITCH 2 chân 3</span> <span class="tag t-bom">theo sheet</span></td><td>Sheet ghi 5V; SWITCH 2 chân 3 là nhánh cấp điện cho mạch này.</td></tr>
+<tr data-id="bt-gnd"><td class="ck"><input type="checkbox" id="c-bt-gnd" aria-label="Đã nối GND tới GND"></td><td><label for="c-bt-gnd">GND</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="bt-agnd"><td class="ck"><input type="checkbox" id="c-bt-agnd" aria-label="Đã nối AGND tới GND"></td><td><label for="c-bt-agnd">AGND</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td>Mass của đường âm thanh.</td></tr>
+<tr data-id="bt-l"><td class="ck"><input type="checkbox" id="c-bt-l" aria-label="Đã nối AUDIO_L tới chưa ghi"></td><td><label for="c-bt-l">AUDIO_L</label></td><td><span class="to">chưa ghi</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td>Sheet chỉ ghi &quot;R+L mạch giải mã&quot;. Xem mục 03.</td></tr>
+<tr data-id="bt-r"><td class="ck"><input type="checkbox" id="c-bt-r" aria-label="Đã nối AUDIO_R tới chưa ghi"></td><td><label for="c-bt-r">AUDIO_R</label></td><td><span class="to">chưa ghi</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td></td></tr>
+</tbody></table></div>
+<div class="group-h">Nút nhấn · PCF8574T <small>12 chân · sheet mục 4</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="btn-com"><td class="ck"><input type="checkbox" id="c-btn-com" aria-label="Đã nối COM tới GND"></td><td><label for="c-btn-com">COM</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td>Bấm nút là nối chân đó xuống GND.</td></tr>
+<tr data-id="btn-up"><td class="ck"><input type="checkbox" id="c-btn-up" aria-label="Đã nối UP tới P0"></td><td><label for="c-btn-up">UP</label></td><td><span class="to">P0</span> <span class="tag t-bom">theo sheet</span></td><td>Chân PCF8574 có điện trở kéo lên yếu bên trong: thả = HIGH, bấm = LOW.</td></tr>
+<tr data-id="btn-down"><td class="ck"><input type="checkbox" id="c-btn-down" aria-label="Đã nối DOWN tới P1"></td><td><label for="c-btn-down">DOWN</label></td><td><span class="to">P1</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="btn-left"><td class="ck"><input type="checkbox" id="c-btn-left" aria-label="Đã nối LEFT tới P2"></td><td><label for="c-btn-left">LEFT</label></td><td><span class="to">P2</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="btn-right"><td class="ck"><input type="checkbox" id="c-btn-right" aria-label="Đã nối RIGHT tới P3"></td><td><label for="c-btn-right">RIGHT</label></td><td><span class="to">P3</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="btn-mid"><td class="ck"><input type="checkbox" id="c-btn-mid" aria-label="Đã nối MID tới P4"></td><td><label for="c-btn-mid">MID</label></td><td><span class="to">P4</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="btn-set"><td class="ck"><input type="checkbox" id="c-btn-set" aria-label="Đã nối SET tới P5"></td><td><label for="c-btn-set">SET</label></td><td><span class="to">P5</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="btn-rst"><td class="ck"><input type="checkbox" id="c-btn-rst" aria-label="Đã nối RST tới P6"></td><td><label for="c-btn-rst">RST</label></td><td><span class="to">P6</span> <span class="tag t-bom">theo sheet</span></td><td>Chỉ là một nút thường, không nối vào chân reset của ESP32.</td></tr>
+<tr data-id="pcf-vcc"><td class="ck"><input type="checkbox" id="c-pcf-vcc" aria-label="Đã nối PCF8574T · VCC tới 3V3"></td><td><label for="c-pcf-vcc">PCF8574T · VCC</label></td><td><span class="to">3V3</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="pcf-gnd"><td class="ck"><input type="checkbox" id="c-pcf-gnd" aria-label="Đã nối PCF8574T · GND tới GND"></td><td><label for="c-pcf-gnd">PCF8574T · GND</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="pcf-sda"><td class="ck"><input type="checkbox" id="c-pcf-sda" aria-label="Đã nối PCF8574T · SDA tới GPIO 17"></td><td><label for="c-pcf-sda">PCF8574T · SDA</label></td><td><span class="to">GPIO 17</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td>Phải khai báo chân khi khởi động I2C, vì 2 chân I2C mặc định (8, 9) đã dành cho màn.</td></tr>
+<tr data-id="pcf-scl"><td class="ck"><input type="checkbox" id="c-pcf-scl" aria-label="Đã nối PCF8574T · SCL tới GPIO 21"></td><td><label for="c-pcf-scl">PCF8574T · SCL</label></td><td><span class="to">GPIO 21</span> <span class="tag t-add">chưa điền · đề xuất</span></td><td></td></tr>
+</tbody></table></div>
+<div class="group-h">Nguồn · pin, mạch sạc, hạ áp <small>sheet mục 5</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="pin-vcc"><td class="ck"><input type="checkbox" id="c-pin-vcc" aria-label="Đã nối Pin + tới SWITCH 1 · chân 1"></td><td><label for="c-pin-vcc">Pin +</label></td><td><span class="to">SWITCH 1 · chân 1</span> <span class="tag t-bom">theo sheet</span></td><td>Đồng thời đi qua trở 100K tới GPIO 1.</td></tr>
+<tr data-id="pin-100k"><td class="ck"><input type="checkbox" id="c-pin-100k" aria-label="Đã nối Trở 100K tới Pin + → GPIO 1"></td><td><label for="c-pin-100k">Trở 100K</label></td><td><span class="to">Pin + → GPIO 1</span> <span class="tag t-bom">theo sheet</span></td><td>Nửa trên của cầu chia áp đo pin.</td></tr>
+<tr data-id="pin-33k"><td class="ck"><input type="checkbox" id="c-pin-33k" aria-label="Đã nối Trở 33K tới GPIO 1 → GND"></td><td><label for="c-pin-33k">Trở 33K</label></td><td><span class="to">GPIO 1 → GND</span> <span class="tag t-bom">theo sheet</span></td><td>Nửa dưới. GPIO 1 nhận khoảng 1/4 điện áp pin, an toàn cho chân 3,3V.</td></tr>
+<tr data-id="pin-gnd"><td class="ck"><input type="checkbox" id="c-pin-gnd" aria-label="Đã nối Pin − tới GND"></td><td><label for="c-pin-gnd">Pin −</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="chg-bp"><td class="ck"><input type="checkbox" id="c-chg-bp" aria-label="Đã nối Mạch sạc · B+ tới Pin +"></td><td><label for="c-chg-bp">Mạch sạc · B+</label></td><td><span class="to">Pin +</span> <span class="tag t-rec">suy ra</span></td><td>Sheet để trống ô này. Theo tên chân thì nối cực + của pin.</td></tr>
+<tr data-id="chg-bm"><td class="ck"><input type="checkbox" id="c-chg-bm" aria-label="Đã nối Mạch sạc · B− tới Pin −"></td><td><label for="c-chg-bm">Mạch sạc · B−</label></td><td><span class="to">Pin −</span> <span class="tag t-rec">suy ra</span></td><td></td></tr>
+<tr data-id="chg-d"><td class="ck"><input type="checkbox" id="c-chg-d" aria-label="Đã nối Mạch sạc · D tới trở 10K → GPIO 3"></td><td><label for="c-chg-d">Mạch sạc · D</label></td><td><span class="to">trở 10K → GPIO 3</span> <span class="tag t-bom">theo sheet</span></td><td>Báo trạng thái sạc. Đo điện áp chân D trước: quá 3,3V thì phải chia áp.</td></tr>
+<tr data-id="buck-vin"><td class="ck"><input type="checkbox" id="c-buck-vin" aria-label="Đã nối Hạ áp · VIN tới SWITCH 1 · chân 2"></td><td><label for="c-buck-vin">Hạ áp · VIN</label></td><td><span class="to">SWITCH 1 · chân 2</span> <span class="tag t-bom">theo sheet</span></td><td>Sheet ghi &quot;Pin +&quot;: đi qua công tắc.</td></tr>
+<tr data-id="buck-gin"><td class="ck"><input type="checkbox" id="c-buck-gin" aria-label="Đã nối Hạ áp · GND vào tới Pin −"></td><td><label for="c-buck-gin">Hạ áp · GND vào</label></td><td><span class="to">Pin −</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="buck-vout"><td class="ck"><input type="checkbox" id="c-buck-vout" aria-label="Đã nối Hạ áp · VOUT tới 5V + tụ 1000µF"></td><td><label for="c-buck-vout">Hạ áp · VOUT</label></td><td><span class="to">5V + tụ 1000µF</span> <span class="tag t-bom">theo sheet</span></td><td>Tụ đặt sát, chân dài (+) vào 5V, vạch trắng (−) vào GND.</td></tr>
+<tr data-id="buck-gout"><td class="ck"><input type="checkbox" id="c-buck-gout" aria-label="Đã nối Hạ áp · GND ra tới GND"></td><td><label for="c-buck-gout">Hạ áp · GND ra</label></td><td><span class="to">GND</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+</tbody></table></div>
+<div class="group-h">Công tắc <small>sheet mục 6</small></div>
+<div class="tbl-wrap"><table class="wires"><thead><tr><th class="ck"><span class="sr">Đã nối</span></th><th>Chân module</th><th>Nối tới</th><th>Ghi chú</th></tr></thead><tbody>
+<tr data-id="sw1-1"><td class="ck"><input type="checkbox" id="c-sw1-1" aria-label="Đã nối SWITCH 1 · chân 1 tới Pin +"></td><td><label for="c-sw1-1">SWITCH 1 · chân 1</label></td><td><span class="to">Pin +</span> <span class="tag t-bom">theo sheet</span></td><td>Công tắc 3 chân: chân 2 (giữa) nối với chân 1 hoặc chân 3 tuỳ phía gạt.</td></tr>
+<tr data-id="sw1-2"><td class="ck"><input type="checkbox" id="c-sw1-2" aria-label="Đã nối SWITCH 1 · chân 2 tới Hạ áp · VIN"></td><td><label for="c-sw1-2">SWITCH 1 · chân 2</label></td><td><span class="to">Hạ áp · VIN</span> <span class="tag t-bom">theo sheet</span></td><td>Gạt về chân 1 là bật robot.</td></tr>
+<tr data-id="sw1-3"><td class="ck"><input type="checkbox" id="c-sw1-3" aria-label="Đã nối SWITCH 1 · chân 3 tới để trống"></td><td><label for="c-sw1-3">SWITCH 1 · chân 3</label></td><td><span class="to">để trống</span> <span class="tag t-bom">theo sheet</span></td><td>Gạt về chân 3 là tắt.</td></tr>
+<tr data-id="sw2-1"><td class="ck"><input type="checkbox" id="c-sw2-1" aria-label="Đã nối SWITCH 2 · chân 1 tới MAX98357 · VIN"></td><td><label for="c-sw2-1">SWITCH 2 · chân 1</label></td><td><span class="to">MAX98357 · VIN</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="sw2-2"><td class="ck"><input type="checkbox" id="c-sw2-2" aria-label="Đã nối SWITCH 2 · chân 2 tới VCC (đường 5V)"></td><td><label for="c-sw2-2">SWITCH 2 · chân 2</label></td><td><span class="to">VCC (đường 5V)</span> <span class="tag t-bom">theo sheet</span></td><td></td></tr>
+<tr data-id="sw2-3"><td class="ck"><input type="checkbox" id="c-sw2-3" aria-label="Đã nối SWITCH 2 · chân 3 tới Bluetooth · 5V"></td><td><label for="c-sw2-3">SWITCH 2 · chân 3</label></td><td><span class="to">Bluetooth · 5V</span> <span class="tag t-bom">theo sheet</span></td><td>Mỗi lúc chỉ một trong hai mạch âm thanh có điện.</td></tr>
+</tbody></table></div>
+  </div>
+
+  <!-- ============ 2. SƠ ĐỒ ============ -->
+  <h2><span class="no">02</span> Sơ đồ nối dây toàn bộ robot</h2>
+  <p>Cờ màu ở đầu chân (<b style="color:var(--pwr)">5V</b>, <b style="color:var(--v33)">3V3</b>, <b>GND</b>) nghĩa là nối vào đường nguồn đó, không cần kéo dây dài qua bản vẽ. Mọi GND nối chung với nhau. Chấm tròn là điểm nối; chỗ dây vượt qua dây khác bằng vòng cung nhỏ là <b>không nối</b>. Bản vẽ rộng, kéo ngang để xem hết.</p>
+  <div class="legend">
+    <span><i style="background:var(--pwr)"></i>5V / pin +</span>
+    <span><i style="background:var(--v33)"></i>3V3</span>
+    <span><i style="background:var(--gnd)"></i>GND</span>
+    <span><i style="background:var(--sig1)"></i>màn TFT + thẻ SD (SPI)</span>
+    <span><i style="background:var(--sig2)"></i>mic</span>
+    <span><i style="background:var(--sig3)"></i>khuếch đại + loa</span>
+    <span><i style="background:var(--sig4)"></i>nút nhấn</span>
+    <span><i style="background:var(--copper)"></i>đo pin + báo sạc</span>
+    <span><i style="background:var(--warn)"></i>nét đứt = sheet chưa điền</span>
+  </div>
+  <div class="drawing full">
+<svg viewBox="0 180 1560 1000" role="img" aria-label="Sơ đồ nối dây toàn bộ robot quanh board ESP32-S3: màn, thẻ SD, nút, âm thanh, Bluetooth và khối nguồn">
+<defs>
+  <g id="f5"><rect style="fill:var(--pwr)" x="-30" y="-9" width="30" height="18" rx="3"/><text style="fill:#fff;font-family:var(--f-mono);font-size:10.5px;font-weight:600" x="-15" y="4" text-anchor="middle">5V</text></g>
+  <g id="f3"><rect style="fill:var(--v33)" x="-34" y="-9" width="34" height="18" rx="3"/><text style="fill:#fff;font-family:var(--f-mono);font-size:10.5px;font-weight:600" x="-17" y="4" text-anchor="middle">3V3</text></g>
+  <g id="fg"><rect style="fill:var(--gnd)" x="-36" y="-9" width="36" height="18" rx="3"/><text style="fill:var(--bg);font-family:var(--f-mono);font-size:10.5px;font-weight:600" x="-18" y="4" text-anchor="middle">GND</text></g>
+</defs>
+<rect class="zone" x="16" y="195" width="594" height="397" rx="10"/>
+<text x="32" y="222" class="zone-t">MÀN HÌNH + THẺ SD · SPI</text>
+<rect class="zone" x="16" y="600" width="594" height="238" rx="10"/>
+<text x="32" y="627" class="zone-t">NÚT NHẤN · I2C</text>
+<rect class="zone" x="905" y="195" width="639" height="643" rx="10"/>
+<text x="921" y="222" class="zone-t">ÂM THANH · I2S + BLUETOOTH</text>
+<rect class="zone" x="16" y="858" width="1528" height="306" rx="10"/>
+<text x="32" y="886" class="zone-t">NGUỒN · PIN → SWITCH 1 → HẠ ÁP 5V</text>
+<rect class="brd" x="640" y="200" width="160" height="620" rx="8"/>
+<text x="720" y="228" class="brd-t" style="font-family:var(--f-display);font-size:19px;font-weight:700" text-anchor="middle">ESP32-S3</text>
+<text x="720" y="244" class="brd-t" style="font-size:10.5px" text-anchor="middle">board duy nhất</text>
+<rect class="pin" x="630" y="255" width="10" height="10"/>
+<text x="652" y="264" class="brd-t mono" style="font-size:12px">G10</text>
+<rect class="pin" x="630" y="285" width="10" height="10"/>
+<text x="652" y="294" class="brd-t mono" style="font-size:12px">G9</text>
+<rect class="pin" x="630" y="315" width="10" height="10"/>
+<text x="652" y="324" class="brd-t mono" style="font-size:12px">G8</text>
+<rect class="pin" x="630" y="345" width="10" height="10"/>
+<text x="652" y="354" class="brd-t mono" style="font-size:12px">G14</text>
+<rect class="pin" x="630" y="375" width="10" height="10"/>
+<text x="652" y="384" class="brd-t mono" style="font-size:12px">G18</text>
+<rect class="pin" x="630" y="405" width="10" height="10"/>
+<text x="652" y="414" class="brd-t mono" style="font-size:12px">G13</text>
+<rect class="pin" x="630" y="525" width="10" height="10"/>
+<text x="652" y="534" class="brd-t mono" style="font-size:12px">G11*</text>
+<rect class="pin" x="630" y="550" width="10" height="10"/>
+<text x="652" y="559" class="brd-t mono" style="font-size:12px">G12*</text>
+<rect class="pin" x="630" y="655" width="10" height="10"/>
+<text x="652" y="664" class="brd-t mono" style="font-size:12px">G17*</text>
+<rect class="pin" x="630" y="685" width="10" height="10"/>
+<text x="652" y="694" class="brd-t mono" style="font-size:12px">G21*</text>
+<rect class="pin" x="800" y="255" width="10" height="10"/>
+<text x="788" y="264" class="brd-t mono" style="font-size:12px" text-anchor="end">G4</text>
+<rect class="pin" x="800" y="285" width="10" height="10"/>
+<text x="788" y="294" class="brd-t mono" style="font-size:12px" text-anchor="end">G5</text>
+<rect class="pin" x="800" y="315" width="10" height="10"/>
+<text x="788" y="324" class="brd-t mono" style="font-size:12px" text-anchor="end">G6</text>
+<rect class="pin" x="800" y="415" width="10" height="10"/>
+<text x="788" y="424" class="brd-t mono" style="font-size:12px" text-anchor="end">G15</text>
+<rect class="pin" x="800" y="445" width="10" height="10"/>
+<text x="788" y="454" class="brd-t mono" style="font-size:12px" text-anchor="end">G16</text>
+<rect class="pin" x="800" y="475" width="10" height="10"/>
+<text x="788" y="484" class="brd-t mono" style="font-size:12px" text-anchor="end">G7</text>
+<rect class="pin" x="800" y="615" width="10" height="10"/>
+<text x="788" y="624" class="brd-t mono" style="font-size:12px" text-anchor="end">5V</text>
+<rect class="pin" x="800" y="655" width="10" height="10"/>
+<text x="788" y="664" class="brd-t mono" style="font-size:12px" text-anchor="end">3V3</text>
+<rect class="pin" x="800" y="695" width="10" height="10"/>
+<text x="788" y="704" class="brd-t mono" style="font-size:12px" text-anchor="end">GND</text>
+<rect class="pin" x="665" y="818" width="10" height="10"/>
+<text x="670" y="808" class="brd-t mono" style="font-size:12px" text-anchor="middle">G3</text>
+<rect class="pin" x="735" y="818" width="10" height="10"/>
+<text x="740" y="808" class="brd-t mono" style="font-size:12px" text-anchor="middle">G1</text>
+<text x="720" y="590" class="brd-t" style="font-size:10.5px" text-anchor="middle">* = sheet chưa điền,</text>
+<text x="720" y="604" class="brd-t" style="font-size:10.5px" text-anchor="middle">chân đề xuất</text>
+<path class="w w-pwr" d="M805 620 H845"/>
+<use href="#f5" x="875" y="620"/>
+<path class="w w-33" d="M805 660 H845"/>
+<use href="#f3" x="879" y="660"/>
+<path class="w w-gnd" d="M805 700 H845"/>
+<use href="#fg" x="881" y="700"/>
+<text x="812" y="735" class="small">5V ← mạch hạ áp</text>
+<text x="812" y="749" class="small">3V3: ổn áp trên board</text>
+<rect class="mod" x="170" y="235" width="230" height="200" rx="6"/>
+<rect x="190" y="250" width="118" height="78" rx="3" style="fill:var(--screen)"/>
+<rect class="eye" x="214" y="272" width="22" height="32" rx="7"/><rect class="eye" x="262" y="272" width="22" height="32" rx="7"/>
+<text x="190" y="352" class="mod-t" style="font-size:13px;font-weight:700">Màn TFT ST7789</text>
+<text x="190" y="368" class="mod-t" style="font-size:10.5px">2.8" · SPI · 240×320</text>
+<text x="190" y="384" class="mod-t" style="font-size:10px">MISO: để trống</text>
+<text x="392" y="264" class="mod-t mono" style="font-size:10.5px" text-anchor="end">MOSI/SDA</text>
+<text x="392" y="294" class="mod-t mono" style="font-size:10.5px" text-anchor="end">SCK/SCL</text>
+<text x="392" y="324" class="mod-t mono" style="font-size:10.5px" text-anchor="end">DC</text>
+<text x="392" y="354" class="mod-t mono" style="font-size:10.5px" text-anchor="end">CS</text>
+<text x="392" y="384" class="mod-t mono" style="font-size:10.5px" text-anchor="end">RES</text>
+<text x="392" y="414" class="mod-t mono" style="font-size:10.5px" text-anchor="end">LED</text>
+<path class="w w-s1" d="M400 260 H635"/>
+<path class="w w-s1" d="M400 290 H635"/>
+<path class="w w-s1" d="M400 320 H635"/>
+<path class="w w-s1" d="M400 350 H635"/>
+<path class="w w-s1" d="M400 380 H635"/>
+<path class="w w-s1" d="M400 410 H635"/>
+<text x="178" y="404" class="mod-t mono" style="font-size:10.5px">VCC</text>
+<text x="178" y="429" class="mod-t mono" style="font-size:10.5px">GND</text>
+<path class="w w-pwr" d="M170 400 H150"/>
+<use href="#f5" x="150" y="400"/>
+<path class="w w-gnd" d="M170 425 H150"/>
+<use href="#fg" x="150" y="425"/>
+<text x="40" y="380" class="small mono">VCC = 5V</text>
+<text x="495" y="252" class="small">SDA ở đây là dữ liệu SPI</text>
+<rect class="mod" x="170" y="465" width="230" height="112" rx="6"/>
+<path d="M190 482 h30 l10 10 v38 h-40 z" style="fill:#c9d3e6;opacity:.9"/>
+<text x="244" y="500" class="mod-t" style="font-size:13px;font-weight:700">Thẻ nhớ SD</text>
+<text x="244" y="516" class="mod-t" style="font-size:10.5px">chung SPI với màn</text>
+<text x="182" y="566" class="mod-t" style="font-size:10px">VCC/GND: sheet chưa ghi</text>
+<text x="392" y="484" class="mod-t mono" style="font-size:10.5px" text-anchor="end">SCK</text>
+<text x="392" y="509" class="mod-t mono" style="font-size:10.5px" text-anchor="end">MOSI</text>
+<text x="392" y="534" class="mod-t mono" style="font-size:10.5px" text-anchor="end">MISO</text>
+<text x="392" y="559" class="mod-t mono" style="font-size:10.5px" text-anchor="end">CS</text>
+<path class="w w-s1 w-unk" d="M450 290 V313 A7 7 0 0 1 450 327 V343 A7 7 0 0 1 450 357 V373 A7 7 0 0 1 450 387 V403 A7 7 0 0 1 450 417 V480 H400"/>
+<path class="w w-s1 w-unk" d="M475 260 V283 A7 7 0 0 1 475 297 V313 A7 7 0 0 1 475 327 V343 A7 7 0 0 1 475 357 V373 A7 7 0 0 1 475 387 V403 A7 7 0 0 1 475 417 V505 H400"/>
+<circle cx="450" cy="290" r="4.5" style="fill:var(--sig1)"/>
+<circle cx="475" cy="260" r="4.5" style="fill:var(--sig1)"/>
+<path class="w w-unk" d="M400 530 H635"/>
+<path class="w w-unk" d="M400 555 H635"/>
+<text x="505" y="524" class="small mono">MISO → G11*</text>
+<text x="505" y="574" class="small mono">CS → G12*</text>
+<rect class="mod" x="40" y="640" width="180" height="184" rx="6"/>
+<circle cx="88" cy="732" r="34" style="fill:#2c3a50;stroke:#c9d3e6;stroke-width:3"/>
+<circle cx="88" cy="732" r="12" style="fill:#c9d3e6"/>
+<text x="52" y="794" class="mod-t" style="font-size:12px;font-weight:700">Nút đa hướng</text>
+<text x="52" y="809" class="mod-t" style="font-size:10px">5 hướng + SET + RST</text>
+<text x="212" y="659" class="mod-t mono" style="font-size:10.5px" text-anchor="end">COM</text>
+<text x="212" y="681" class="mod-t mono" style="font-size:10.5px" text-anchor="end">UP</text>
+<text x="212" y="703" class="mod-t mono" style="font-size:10.5px" text-anchor="end">DOWN</text>
+<text x="212" y="725" class="mod-t mono" style="font-size:10.5px" text-anchor="end">LEFT</text>
+<text x="212" y="747" class="mod-t mono" style="font-size:10.5px" text-anchor="end">RIGHT</text>
+<text x="212" y="769" class="mod-t mono" style="font-size:10.5px" text-anchor="end">MID</text>
+<text x="212" y="791" class="mod-t mono" style="font-size:10.5px" text-anchor="end">SET</text>
+<text x="212" y="813" class="mod-t mono" style="font-size:10.5px" text-anchor="end">RST</text>
+<path class="w w-gnd" d="M220 655 H252"/>
+<use href="#fg" x="288" y="655"/>
+<rect class="mod" x="300" y="640" width="170" height="184" rx="6"/>
+<text x="308" y="681" class="mod-t mono" style="font-size:10.5px">P0</text>
+<path class="w w-s4" d="M220 677 H300"/>
+<text x="308" y="703" class="mod-t mono" style="font-size:10.5px">P1</text>
+<path class="w w-s4" d="M220 699 H300"/>
+<text x="308" y="725" class="mod-t mono" style="font-size:10.5px">P2</text>
+<path class="w w-s4" d="M220 721 H300"/>
+<text x="308" y="747" class="mod-t mono" style="font-size:10.5px">P3</text>
+<path class="w w-s4" d="M220 743 H300"/>
+<text x="308" y="769" class="mod-t mono" style="font-size:10.5px">P4</text>
+<path class="w w-s4" d="M220 765 H300"/>
+<text x="308" y="791" class="mod-t mono" style="font-size:10.5px">P5</text>
+<path class="w w-s4" d="M220 787 H300"/>
+<text x="308" y="813" class="mod-t mono" style="font-size:10.5px">P6</text>
+<path class="w w-s4" d="M220 809 H300"/>
+<text x="392" y="728" class="mod-t" style="font-size:13px;font-weight:700" text-anchor="middle">PCF8574T</text>
+<text x="392" y="744" class="mod-t" style="font-size:10px" text-anchor="middle">I2C → 8 chân</text>
+<text x="462" y="664" class="mod-t mono" style="font-size:10.5px" text-anchor="end">SDA</text>
+<text x="462" y="694" class="mod-t mono" style="font-size:10.5px" text-anchor="end">SCL</text>
+<text x="462" y="774" class="mod-t mono" style="font-size:10.5px" text-anchor="end">VCC</text>
+<text x="462" y="804" class="mod-t mono" style="font-size:10.5px" text-anchor="end">GND</text>
+<path class="w w-unk" d="M470 660 H635"/>
+<path class="w w-unk" d="M470 690 H635"/>
+<text x="505" y="654" class="small mono">SDA → G17*</text>
+<text x="505" y="708" class="small mono">SCL → G21*</text>
+<path class="w w-33" d="M470 770 H500"/>
+<use href="#f3" x="534" y="770"/>
+<path class="w w-gnd" d="M470 800 H500"/>
+<use href="#fg" x="536" y="800"/>
+<rect class="mod" x="1000" y="235" width="180" height="108" rx="6"/>
+<circle cx="1090" cy="272" r="14" style="fill:#c9d3e6;opacity:.9"/><circle cx="1090" cy="272" r="3" style="fill:#0b1220"/>
+<text x="1090" y="312" class="mod-t" style="font-size:12px;font-weight:700" text-anchor="middle">MIC I2S</text>
+<text x="1090" y="327" class="mod-t" style="font-size:10px" text-anchor="middle">INMP441</text>
+<text x="1008" y="264" class="mod-t mono" style="font-size:10.5px">WS</text>
+<path class="w w-s2" d="M805 260 H1000"/>
+<text x="1008" y="294" class="mod-t mono" style="font-size:10.5px">SCK</text>
+<path class="w w-s2" d="M805 290 H1000"/>
+<text x="1008" y="324" class="mod-t mono" style="font-size:10.5px">SD</text>
+<path class="w w-s2" d="M805 320 H1000"/>
+<text x="1172" y="259" class="mod-t mono" style="font-size:10.5px" text-anchor="end">VDD</text>
+<path class="w w-33" d="M1180 255 H1210"/>
+<use href="#f3" x="1244" y="255"/>
+<text x="1172" y="289" class="mod-t mono" style="font-size:10.5px" text-anchor="end">GND</text>
+<path class="w w-gnd" d="M1180 285 H1210"/>
+<use href="#fg" x="1246" y="285"/>
+<text x="1172" y="319" class="mod-t mono" style="font-size:10.5px" text-anchor="end">L/R</text>
+<path class="w w-gnd" d="M1180 315 H1210"/>
+<use href="#fg" x="1246" y="315"/>
+<text x="1256" y="319" class="small">L/R nối GND = kênh trái</text>
+<rect class="mod" x="1000" y="385" width="180" height="150" rx="6"/>
+<text x="1090" y="455" class="mod-t" style="font-size:12.5px;font-weight:700" text-anchor="middle">MAX98357</text>
+<text x="1090" y="470" class="mod-t" style="font-size:10px" text-anchor="middle">khuếch đại I2S</text>
+<text x="1090" y="512" class="mod-t" style="font-size:10px" text-anchor="middle">SCK: không dùng</text>
+<text x="1008" y="424" class="mod-t mono" style="font-size:10.5px">LRC</text>
+<path class="w w-s3" d="M805 420 H1000"/>
+<text x="1008" y="454" class="mod-t mono" style="font-size:10.5px">BCLK</text>
+<path class="w w-s3" d="M805 450 H1000"/>
+<text x="1008" y="484" class="mod-t mono" style="font-size:10.5px">DIN</text>
+<path class="w w-s3" d="M805 480 H1000"/>
+<text x="1172" y="409" class="mod-t mono" style="font-size:10.5px" text-anchor="end">VIN</text>
+<text x="1172" y="434" class="mod-t mono" style="font-size:10.5px" text-anchor="end">SD</text>
+<text x="1172" y="469" class="mod-t mono" style="font-size:10.5px" text-anchor="end">GND</text>
+<text x="1172" y="499" class="mod-t mono" style="font-size:10.5px" text-anchor="end">GAIN</text>
+<path class="w w-pwr" d="M1180 430 H1200 V405"/>
+<path class="w w-pwr" d="M1180 405 H1500 V905"/>
+<circle cx="1200" cy="405" r="4.5" style="fill:var(--pwr)"/>
+<text x="1262" y="397" class="small mono">VIN ← SWITCH 2 · chân 1</text>
+<text x="1212" y="440" class="small">SD nối VIN: luôn bật</text>
+<path class="w w-gnd" d="M1180 465 H1210"/>
+<use href="#fg" x="1246" y="465"/>
+<path class="w w-gnd" d="M1180 495 H1210"/>
+<use href="#fg" x="1246" y="495"/>
+<text x="1254" y="499" class="small">GAIN → GND: 12dB</text>
+<path class="w w-s3" d="M1060 535 V556"/>
+<path class="w w-s3" d="M1120 535 V556"/>
+<rect x="1040" y="556" width="100" height="22" rx="3" style="fill:var(--gnd)"/>
+<text x="1090" y="571" class="flag-tg" style="font-size:10.5px" text-anchor="middle">LOA +/−</text>
+<text x="1150" y="571" class="small">không cực nào xuống GND</text>
+<rect class="mod" x="1000" y="615" width="180" height="150" rx="6"/>
+<path d="M1035 650 l18 16 -9 8 v-32 l9 8 -18 16" style="fill:none;stroke:#c9d3e6;stroke-width:2.5;stroke-linejoin:round"/>
+<text x="1012" y="700" class="mod-t" style="font-size:12.5px;font-weight:700">Bluetooth</text>
+<text x="1012" y="716" class="mod-t" style="font-size:10px">mạch giải mã</text>
+<text x="1012" y="748" class="mod-t" style="font-size:10px">không nối ESP32</text>
+<text x="1172" y="644" class="mod-t mono" style="font-size:10.5px" text-anchor="end">5V</text>
+<text x="1172" y="671" class="mod-t mono" style="font-size:10.5px" text-anchor="end">GND</text>
+<text x="1172" y="698" class="mod-t mono" style="font-size:10.5px" text-anchor="end">AGND</text>
+<text x="1172" y="725" class="mod-t mono" style="font-size:10.5px" text-anchor="end">AUDIO_L</text>
+<text x="1172" y="752" class="mod-t mono" style="font-size:10.5px" text-anchor="end">AUDIO_R</text>
+<path class="w w-pwr" d="M1180 640 H1450 V905"/>
+<text x="1262" y="632" class="small mono">5V ← SWITCH 2 · chân 3</text>
+<path class="w w-gnd" d="M1180 667 H1210"/>
+<use href="#fg" x="1246" y="667"/>
+<path class="w w-gnd" d="M1180 694 H1210"/>
+<use href="#fg" x="1246" y="694"/>
+<path class="w w-unk" d="M1180 721 H1290"/>
+<path class="w w-unk" d="M1180 748 H1290"/>
+<rect class="note-box" x="1290" y="706" width="142" height="58" rx="6"/>
+<text x="1300" y="724" class="lbl" style="font-weight:700;fill:var(--warn)">L/R đi đâu?</text>
+<text x="1300" y="740" class="small">sheet chưa ghi · cần</text>
+<text x="1300" y="754" class="small">khuếch đại analog</text>
+<rect x="40" y="920" width="170" height="190" rx="8" style="fill:var(--panel);stroke:var(--line);stroke-width:1.5"/>
+<rect class="cell" x="56" y="944" width="138" height="36" rx="18"/><rect class="cell" x="56" y="988" width="138" height="36" rx="18"/>
+<text x="125" y="967" style="font-size:12px;font-weight:700;fill:#fff" text-anchor="middle">cell</text>
+<text x="125" y="1011" style="font-size:12px;font-weight:700;fill:#fff" text-anchor="middle">cell</text>
+<text x="125" y="1046" class="lbl" style="font-weight:700" text-anchor="middle">PIN</text>
+<text x="125" y="1062" class="small" text-anchor="middle">sheet chưa ghi loại</text>
+<text x="125" y="1076" class="small" text-anchor="middle">hạ áp ra 5V cần</text>
+<text x="125" y="1090" class="small" text-anchor="middle">pin ≥ 6,5V (2S 7,4V)</text>
+<text x="200" y="964" style="font-weight:700;fill:var(--pwr)" text-anchor="end">+</text>
+<text x="200" y="1088" style="font-weight:700" text-anchor="end">−</text>
+<path class="w w-pwr" d="M210 970 H830"/>
+<path class="w w-gnd" d="M210 1070 H960" style="stroke-width:5"/>
+<text x="240" y="1092" class="small mono" style="font-weight:600">ĐƯỜNG GND CHUNG</text>
+<rect class="mod" x="270" y="995" width="160" height="50" rx="6"/>
+<rect x="248" y="1008" width="22" height="24" rx="3" style="fill:#8b949e"/>
+<text x="236" y="1004" class="small mono" text-anchor="end">USB</text>
+<text x="306" y="1009" class="mod-t mono" style="font-size:10.5px">B+</text>
+<text x="306" y="1040" class="mod-t mono" style="font-size:10.5px">B−</text>
+<text x="352" y="1025" class="mod-t" style="font-size:12px;font-weight:700" text-anchor="middle">Mạch sạc</text>
+<text x="422" y="1024" class="mod-t mono" style="font-size:10.5px" text-anchor="end">D</text>
+<path class="w w-pwr" d="M300 995 V970"/>
+<circle cx="300" cy="970" r="4.5" style="fill:var(--pwr)"/>
+<path class="w w-gnd" d="M300 1045 V1070"/>
+<circle cx="300" cy="1070" r="4.5" style="fill:var(--ink)"/>
+<path class="w w-s5" d="M430 1020 H452"/>
+<rect class="res" x="452" y="1012" width="44" height="16" rx="3"/>
+<text x="474" y="1007" class="small mono" text-anchor="middle">10K</text>
+<path class="w w-s5" d="M496 1020 H670  V977 A7 7 0 0 0 670 963 V828"/>
+<text x="520" y="1040" class="small">D → 10K → G3 (báo sạc)</text>
+<path class="w w-pwr" d="M740 970 V934"/>
+<circle cx="740" cy="970" r="4.5" style="fill:var(--pwr)"/>
+<rect class="res" x="732" y="890" width="16" height="44" rx="3"/>
+<text x="726" y="916" class="small mono" text-anchor="end">100K</text>
+<path class="w w-s5" d="M740 890 V880"/>
+<circle cx="740" cy="880" r="4.5" style="fill:var(--copper)"/>
+<path class="w w-s5" d="M740 880 V828"/>
+<path class="w w-s5" d="M740 880 H760"/>
+<rect class="res" x="760" y="872" width="44" height="16" rx="3"/>
+<text x="782" y="867" class="small mono" text-anchor="middle">33K</text>
+<path class="w w-gnd" d="M804 880 H820"/>
+<use href="#fg" x="856" y="880"/>
+<text x="866" y="884" class="small mono">V(G1) = V(pin) × 33/133 ≈ 0,25 × V(pin)</text>
+<rect x="830" y="950" width="90" height="70" rx="6" style="fill:var(--panel);stroke:var(--ink);stroke-width:2"/>
+<rect x="845" y="990" width="26" height="16" rx="3" style="fill:var(--accent)"/>
+<text x="875" y="976" style="font-size:12px;font-weight:700" text-anchor="middle">SWITCH 1</text>
+<text x="838" y="966" class="small mono">1</text>
+<text x="912" y="1004" class="small mono" text-anchor="end">2</text>
+<text x="882" y="1016" class="small mono">3</text>
+<path class="w w-pwr" d="M920 1000 H960"/>
+<path d="M875 1020 V1034" style="stroke:var(--muted);stroke-width:2"/>
+<text x="875" y="1048" class="small" text-anchor="middle">3: trống</text>
+<rect class="mod" x="960" y="950" width="170" height="150" rx="6"/>
+<rect x="1098" y="960" width="22" height="22" rx="3" style="fill:#2f7fd8;stroke:#cfe0ff"/>
+<text x="1045" y="1030" class="mod-t" style="font-size:13px;font-weight:700" text-anchor="middle">Mạch hạ áp</text>
+<text x="1045" y="1046" class="mod-t" style="font-size:10.5px" text-anchor="middle">pin → 5V</text>
+<text x="968" y="1004" class="mod-t mono" style="font-size:10.5px">VIN</text>
+<text x="968" y="1074" class="mod-t mono" style="font-size:10.5px">GND</text>
+<text x="1122" y="1004" class="mod-t mono" style="font-size:10.5px" text-anchor="end">VOUT</text>
+<text x="1122" y="1074" class="mod-t mono" style="font-size:10.5px" text-anchor="end">GND</text>
+<path class="w w-pwr" d="M1130 1000 H1530" style="stroke-width:5"/>
+<path class="w w-gnd" d="M1130 1070 H1530" style="stroke-width:5"/>
+<text x="1196" y="990" class="lbl mono" style="font-weight:600;fill:var(--pwr)">ĐƯỜNG 5V</text>
+<path class="w w-pwr" d="M1165 1000 V1018"/>
+<circle cx="1165" cy="1000" r="4.5" style="fill:var(--pwr)"/>
+<rect class="res" x="1157" y="1018" width="16" height="34" rx="3"/>
+<path class="w w-gnd" d="M1165 1052 V1070"/>
+<circle cx="1165" cy="1070" r="4.5" style="fill:var(--ink)"/>
+<text x="1180" y="1040" class="small mono">tụ 1000µF</text>
+<text x="1180" y="1054" class="small">+ lên 5V</text>
+<path class="w w-pwr" d="M1300 1000 V974"/>
+<circle cx="1300" cy="1000" r="4.5" style="fill:var(--pwr)"/>
+<text x="1300" y="966" class="small" text-anchor="middle">ESP32-S3 · 5V</text>
+<path class="w w-pwr" d="M1385 1000 V974"/>
+<circle cx="1385" cy="1000" r="4.5" style="fill:var(--pwr)"/>
+<text x="1385" y="966" class="small" text-anchor="middle">TFT · VCC</text>
+<rect x="1425" y="905" width="100" height="40" rx="6" style="fill:var(--panel);stroke:var(--ink);stroke-width:2"/>
+<text x="1475" y="930" style="font-size:12px;font-weight:700" text-anchor="middle">SWITCH 2</text>
+<text x="1444" y="900" class="small mono" text-anchor="end">3</text>
+<text x="1506" y="900" class="small mono">1</text>
+<path class="w w-pwr" d="M1475 945 V1000"/>
+<circle cx="1475" cy="1000" r="4.5" style="fill:var(--pwr)"/>
+<text x="1481" y="962" class="small mono">2</text>
+<text x="1415" y="900" class="small" text-anchor="end">gạt về 1: ESP nói qua MAX98357</text>
+<text x="1415" y="914" class="small" text-anchor="end">gạt về 3: nhạc Bluetooth</text>
+<text x="1300" y="1092" class="small mono" style="font-weight:600">ĐƯỜNG GND CHUNG</text>
+<text x="40" y="1150" class="small" style="fill:var(--warn);font-weight:600">Cắm USB nạp code: gạt SWITCH 1 về tắt trước, để 2 nguồn 5V không đấu vào nhau.</text>
+<text x="1544" y="1150" class="small" text-anchor="end">chấm tròn = nối · vòng cung = dây vượt qua, không nối</text>
+</svg>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h3>GPIO đã dùng trên ESP32-S3</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>Khối</th><th>GPIO</th><th>Ghi chú</th></tr>
+        <tr><td>Màn MOSI · SCK · DC</td><td class="gp">10 · 9 · 8</td><td>Bus SPI dùng chung với thẻ SD</td></tr>
+        <tr><td>Màn CS · RES · LED</td><td class="gp">14 · 18 · 13</td><td>VCC → 5V, MISO để trống</td></tr>
+        <tr><td>Mic WS · SCK · SD</td><td class="gp">4 · 5 · 6</td><td>Cổng I2S thứ nhất</td></tr>
+        <tr><td>Loa LRC · BCLK · DIN</td><td class="gp">15 · 16 · 7</td><td>Cổng I2S thứ hai</td></tr>
+        <tr><td>Đo pin</td><td class="gp">1</td><td>Chân ADC1, đọc được cả khi bật WiFi</td></tr>
+        <tr><td>Báo sạc (D)</td><td class="gp">3</td><td>Qua trở 10K</td></tr>
+        <tr><td>SD MISO · CS <span class="tag t-add">đề xuất</span></td><td class="gp">11 · 12</td><td>Sheet chưa điền</td></tr>
+        <tr><td>I2C SDA · SCL <span class="tag t-add">đề xuất</span></td><td class="gp">17 · 21</td><td>Sheet chưa điền</td></tr>
+      </table></div>
+    </div>
+    <div>
+      <h3>Chân không nên đụng tới</h3>
+      <div class="tbl-wrap"><table>
+        <tr><th>GPIO</th><th>Lý do</th></tr>
+        <tr><td class="gp">0 · 45 · 46</td><td>Chân cấu hình lúc khởi động. Bị kéo sai mức là board không chạy code.</td></tr>
+        <tr><td class="gp">19 · 20</td><td>Dây USB của chip (nạp code, Serial).</td></tr>
+        <tr><td class="gp">26 – 32</td><td>Nối với chip flash bên trong module.</td></tr>
+        <tr><td class="gp">35 · 36 · 37</td><td>Bản module có PSRAM 8MB (R8) dùng các chân này.</td></tr>
+        <tr><td class="gp">43 · 44</td><td>UART0 (TX/RX), để trống cho log.</td></tr>
+        <tr><td class="gp">2 · 38 – 42 · 47</td><td>Còn trống, dùng được nếu cần thêm.</td></tr>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ============ 3. CẦN CHỐT ============ -->
+  <h2><span class="no">03</span> Chỗ sheet còn trống — cần nhóm chốt</h2>
+  <div class="tbl-wrap"><table class="todo">
+    <tr><th>Chỗ trống</th><th>Vì sao cần</th><th>Đề xuất</th></tr>
+    <tr><td>Loại pin</td><td>Mạch hạ áp cần điện áp vào cao hơn 5V. Mạch sạc cũng phải đúng số cell.</td><td>2 cell 18650 nối tiếp (7,4V) + mạch sạc 2S có bảo vệ. GPIO 1 sẽ đọc khoảng 1,6–2,1V.</td></tr>
+    <tr><td>Thẻ SD: 4 chân</td><td>Thẻ SD phải gửi dữ liệu về (MISO) và cần chân CS riêng.</td><td>SCK, MOSI chung với màn (GPIO 9, 10); MISO → GPIO 11; CS → GPIO 12. Nếu là khe SD trên chính mạch màn thì VCC/GND dùng chung với màn.</td></tr>
+    <tr><td>PCF8574T: SDA, SCL</td><td>Không có 2 chân này thì ESP32 không đọc được 7 nút.</td><td>SDA → GPIO 17, SCL → GPIO 21. Module PCF8574 thường có sẵn trở kéo lên. Chip rời thì thêm 4,7K từ mỗi chân lên 3V3. Địa chỉ I2C 0x20–0x27 tuỳ jumper A0–A2.</td></tr>
+    <tr><td>Bluetooth: AUDIO_L/R</td><td>Tín hiệu analog nhỏ, cần một mạch khuếch đại để ra loa.</td><td>Thêm mạch khuếch đại analog (ví dụ PAM8403) cấp điện từ SWITCH 2 chân 3, ra loa riêng. Nếu dùng chung một loa thì chuyển dây loa bằng công tắc 2 cực.</td></tr>
+    <tr><td>Mạch sạc: B+, B−</td><td>Sheet để trống ô ESP32 và ghi chú.</td><td>B+ → pin +, B− → pin − như bản vẽ. Kiểm tra mạch sạc có ngõ OUT+/OUT− riêng không: có thì tải lấy từ OUT, không lấy thẳng từ pin.</td></tr>
+  </table></div>
+
+  <!-- ============ 4. THỨ TỰ NỐI ============ -->
+  <h2><span class="no">04</span> Thứ tự nối</h2>
+  <ol class="steps">
+    <li><b>Khối nguồn, chưa nối board:</b> pin → SWITCH 1 → mạch hạ áp. Bật công tắc, đo VOUT bằng đồng hồ: phải ra 5V. Đo luôn chân D của mạch sạc khi đang cắm sạc.</li>
+    <li><b>Board + màn TFT, cấp điện bằng USB</b> (SWITCH 1 tắt). Màn sáng và hiện được chữ thì nối tiếp.</li>
+    <li><b>Mic và MAX98357 + loa.</b> Gạt SWITCH 2 về chân 1 để MAX98357 có điện. Thử thu âm rồi phát lại.</li>
+    <li><b>PCF8574T + nút.</b> Quét bus I2C để lấy địa chỉ, rồi bấm từng nút xem đúng chân P0–P6 chưa.</li>
+    <li><b>Thẻ SD</b> sau khi nhóm chốt chân MISO và CS.</li>
+    <li><b>Đo pin:</b> so số ESP32 đọc ở GPIO 1 (nhân 133/33) với số đo bằng đồng hồ. Lệch nhiều thì hiệu chỉnh trong code.</li>
+    <li><b>Bluetooth</b> sau khi chốt đường ra loa ở mục 03.</li>
+  </ol>
+</div>
+
+<script>
+const KEY = "moon-wiring-checklist";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+const boxes = [...document.querySelectorAll("#checklist input[type=checkbox]")];
+function refresh() {
+  let done = 0;
+  boxes.forEach(b => { const on = !!state[b.id]; b.checked = on; b.closest("tr").classList.toggle("done", on); if (on) done++; });
+  document.getElementById("count").textContent = `${done} / ${boxes.length} dây đã nối`;
+  document.getElementById("bar").style.width = (boxes.length ? done / boxes.length * 100 : 0) + "%";
+}
+boxes.forEach(b => b.addEventListener("change", () => { state[b.id] = b.checked; save(); refresh(); }));
+document.getElementById("reset").addEventListener("click", () => { state = {}; save(); refresh(); });
+refresh();
+</script>
+</body>
+</html>

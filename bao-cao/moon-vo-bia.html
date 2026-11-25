@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vỏ bìa gấu trúc Moon</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column; hero = text + live front/side drawings; templates sit on a green cutting mat with a 10 mm grid. */
+:root{
+  --bg:#f3f5f1; --surface:#ffffff; --fg:#18211c; --muted:#58645d; --line:#d8ded8;
+  --accent:#2e7a4b; --accent-soft:#e2efe6; --accent-fg:#ffffff;
+  --warn:#a14d1a; --warn-soft:#fbede3; --info:#2a6aa8; --info-soft:#e7f0f9;
+  --moon:#e8b52a; --pink:#ee8ea6; --decal:#1c1e1d; --ink:#1b1e1c; --board:#fbfbf6; --boardedge:#cfd0c4;
+  --screen:#05080b; --eye:#5fe0ff; --tire:#2a2c2a; --tread:#3a3d3a; --acrylic:#b6d0dc; --silver:#c9cfd3; --steel:#7f888d;
+  --mat:#2c5d47; --matline:#3e7360; --onmat:#e9f2ec; --score:#d24a2c; --mark:#2a78c8; --shadow:#1b2a22;
+  --display:"Baloo 2","Be Vietnam Pro",system-ui,sans-serif;
+  --body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1411; --surface:#161e19; --fg:#e6ece8; --muted:#9ba79f; --line:#28332c;
+    --accent:#7cc595; --accent-soft:#1c3024; --accent-fg:#0d1510;
+    --warn:#f0a46f; --warn-soft:#32231a; --info:#8cc0f2; --info-soft:#18273a;
+    --mat:#1f4535; --matline:#2f5b48; --onmat:#e2ede6; --shadow:#000000;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1411; --surface:#161e19; --fg:#e6ece8; --muted:#9ba79f; --line:#28332c;
+  --accent:#7cc595; --accent-soft:#1c3024; --accent-fg:#0d1510;
+  --warn:#f0a46f; --warn-soft:#32231a; --info:#8cc0f2; --info-soft:#18273a;
+  --mat:#1f4535; --matline:#2f5b48; --onmat:#e2ede6; --shadow:#000000;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.62 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{font-family:var(--display);line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.7rem,7vw,4.6rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(1.7rem,3.4vw,2.3rem);font-weight:700}
+h3{font-size:1.18rem;font-weight:700}
+p{margin:0}
+.eyebrow{font:600 .74rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:1.1rem;color:var(--muted);max-width:60ch}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+section{display:grid;gap:18px;padding-block:44px 8px;border-top:1px solid var(--line)}
+section > header{display:grid;gap:8px;max-width:70ch}
+a{color:var(--accent)}
+button{font:600 .92rem var(--body);cursor:pointer;border-radius:999px;border:1.5px solid var(--fg);background:transparent;color:var(--fg);padding:.5em 1.1em}
+button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.ghost{border-color:var(--line);font-weight:500}
+
+/* HERO */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:center;padding-bottom:36px}
+.hero-text{display:grid;gap:18px;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 .82rem var(--mono);padding:.35em .8em;border-radius:999px;background:var(--accent-soft);color:var(--fg);font-variant-numeric:tabular-nums}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:18px 18px 12px;display:grid;gap:10px;min-width:0}
+.views{display:grid;grid-template-columns:1.12fr .88fr;gap:10px;align-items:end}
+.views figure{margin:0;display:grid;gap:4px;min-width:0}
+.views figcaption{font:500 .72rem var(--mono);color:var(--muted);text-align:center;letter-spacing:.06em;text-transform:uppercase}
+.ill{width:100%;height:auto;display:block;overflow:visible}
+.stage-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.xr{display:none}
+.xray .xr{display:inline}
+.xray .shell{opacity:.28}
+.xr-l{font:600 3.6px var(--mono);fill:var(--mark)}
+.xr-s{fill:none;stroke:var(--mark);stroke-width:.7;stroke-dasharray:2.4 1.4}
+.xr-f{fill:var(--mark);fill-opacity:.12;stroke:var(--mark);stroke-width:.7;stroke-dasharray:2.4 1.4}
+.eye{transform-box:fill-box;transform-origin:center;animation:blink 5.6s infinite}
+@keyframes blink{0%,91%,100%{transform:scaleY(1)}94%{transform:scaleY(.08)}}
+@media (prefers-reduced-motion:reduce){.eye{animation:none}}
+
+/* WHY + MAP */
+.why{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.why div{display:grid;gap:6px;align-content:start;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);min-width:0}
+.why b{font-family:var(--display);font-size:1.05rem}
+.why span{font-size:.92rem;color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.94rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+td.mono{white-space:nowrap}
+
+/* FIELDS */
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;align-items:start}
+fieldset{margin:0;border:1px solid var(--line);border-radius:14px;padding:12px 14px 6px;background:var(--surface);min-width:0}
+legend{font:700 1rem var(--display);padding:0 6px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line)}
+.f:last-child{border-bottom:0}
+.f label{font-size:.9rem;line-height:1.3;min-width:0}
+.f label small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
+.f .in{display:flex;align-items:center;gap:6px;font:500 .8rem var(--mono);color:var(--muted)}
+.f input{width:5.2rem;font:500 .95rem var(--mono);padding:.32em .5em;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);text-align:right;font-variant-numeric:tabular-nums}
+.f.est input{border-color:var(--warn)}
+.tag{display:inline-block;font:600 .64rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);margin-left:4px;vertical-align:1px}
+.checks{display:grid;gap:8px}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;padding:10px 14px;border-radius:12px;font-size:.93rem}
+.check.w{background:var(--warn-soft)} .check.i{background:var(--info-soft)} .check.ok{background:var(--accent-soft)}
+.check b{font:700 .68rem var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:.25em .6em;border-radius:6px;margin-top:2px}
+.check.w b{background:var(--warn);color:var(--surface)} .check.i b{background:var(--info);color:var(--surface)} .check.ok b{background:var(--accent);color:var(--accent-fg)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* TEMPLATES */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.86rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend svg{width:34px;height:14px;flex:none}
+.tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.tplcard{display:grid;gap:8px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.tplcard.wide{grid-column:1/-1}
+.tplhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.qty{font:600 .8rem var(--mono);color:var(--accent);white-space:nowrap}
+.tplnote{font-size:.85rem;color:var(--muted)}
+.tplsvg{overflow-x:auto;border-radius:10px;background:var(--mat)}
+.tplsvg svg{display:block;width:100%;height:auto;min-width:420px}
+.tplcard.wide .tplsvg svg{min-width:640px}
+body.real .tplsvg svg{width:auto;height:auto;min-width:0}
+body.real .tplsvg{background:transparent}
+
+.bd{fill:var(--board);stroke:var(--ink);stroke-width:.45}
+.hole{fill:var(--mat);stroke:var(--ink);stroke-width:.45}
+.sc{stroke:var(--score);stroke-width:.32;stroke-dasharray:1.5 1.1}
+.arcz{fill:var(--score);fill-opacity:.07}
+.dk{fill:url(#hK)} .dy{fill:url(#hY)} .dp{fill:url(#hP)}
+.sk{fill:var(--decal)} .sy{fill:var(--moon)} .sp{fill:var(--pink)}
+.mk{fill:none;stroke:var(--mark);stroke-width:.35;stroke-dasharray:2 1.2}
+.mkf{fill:var(--mark);fill-opacity:.14;stroke:var(--mark);stroke-width:.35;stroke-dasharray:2 1.2}
+.lb{font:500 2.9px var(--mono);fill:var(--ink);paint-order:stroke;stroke:var(--board);stroke-width:.8;stroke-linejoin:round}
+.lbk{font:600 2.9px var(--mono);fill:var(--mark);paint-order:stroke;stroke:var(--board);stroke-width:.8;stroke-linejoin:round}
+.lbm{font:500 3px var(--mono);fill:var(--onmat)}
+.zl{font:600 3.1px var(--mono);fill:var(--ink);opacity:.75}
+.dim line{stroke:var(--onmat);stroke-width:.25;marker-start:url(#aL);marker-end:url(#aL)}
+.dim text{font:500 3.1px var(--mono);fill:var(--onmat);paint-order:stroke;stroke:var(--mat);stroke-width:.8;stroke-linejoin:round}
+.dim.in line{stroke:var(--ink);marker-start:url(#aD);marker-end:url(#aD)}
+.dim.in text{fill:var(--ink);stroke:var(--board)}
+.ruler line{stroke:var(--onmat);stroke-width:.3}
+.ruler text{font:500 2.6px var(--mono);fill:var(--onmat)}
+.matbg{fill:var(--mat)} .grid{fill:url(#gM)}
+body.real{--mat:#ffffff;--onmat:#141414;--board:#ffffff}
+body.real .grid{display:none}
+
+/* KERF + STEPS + MATERIALS */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:10px;min-width:0}
+.panel svg{width:100%;height:auto;display:block}
+.k-t{font:500 9px var(--mono);fill:var(--fg)}
+.k-m{font:500 9px var(--mono);fill:var(--muted)}
+.big{font:700 1.9rem var(--display);font-variant-numeric:tabular-nums;line-height:1}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stats div{padding:10px 12px;border-radius:12px;background:var(--accent-soft);display:grid;gap:4px}
+.stats span{font-size:.82rem;color:var(--muted)}
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:12px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+ol.steps li::before{content:counter(s);font:800 1.5rem/1 var(--display);color:var(--accent);text-align:center;padding-top:2px}
+ol.steps b{font-family:var(--display);font-size:1.05rem;display:block;margin-bottom:2px}
+ol.steps p{color:var(--muted);font-size:.93rem}
+ul.list{margin:0;padding-left:1.1em;display:grid;gap:6px;font-size:.94rem}
+ul.list li::marker{color:var(--accent)}
+.note{font-size:.88rem;color:var(--muted)}
+.kbd{font:600 .8rem var(--mono);padding:.1em .45em;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .why{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .split{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .why{grid-template-columns:minmax(0,1fr)}
+  .tpls{grid-template-columns:minmax(0,1fr)}
+}
+@page{size:A4 portrait;margin:8mm}
+@page wide{size:A4 landscape;margin:8mm}
+@media print{
+  body{--mat:#ffffff;--onmat:#141414;--board:#ffffff;background:#fff;color:#000;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .noprint{display:none!important}
+  section{border:0;padding:0}
+  .tpls{display:block}
+  .tplcard{border:0;padding:0 0 6mm;break-inside:avoid;page-break-inside:avoid;background:#fff}
+  .tplcard.wide{page:wide}
+  .tplsvg{background:#fff;overflow:visible}
+  .tplsvg svg{width:auto!important;height:auto!important;min-width:0!important}
+  .grid{display:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="hK" patternUnits="userSpaceOnUse" width="1.6" height="1.6" patternTransform="rotate(45)"><rect width="1.6" height="1.6" style="fill:var(--board)"/><rect width=".75" height="1.6" style="fill:var(--decal)"/></pattern>
+    <pattern id="hY" patternUnits="userSpaceOnUse" width="1.6" height="1.6" patternTransform="rotate(45)"><rect width="1.6" height="1.6" style="fill:var(--board)"/><rect width=".9" height="1.6" style="fill:var(--moon)"/></pattern>
+    <pattern id="hP" patternUnits="userSpaceOnUse" width="1.6" height="1.6" patternTransform="rotate(-45)"><rect width="1.6" height="1.6" style="fill:var(--board)"/><rect width=".9" height="1.6" style="fill:var(--pink)"/></pattern>
+    <pattern id="gM" patternUnits="userSpaceOnUse" width="10" height="10"><path d="M10 0H0V10" style="fill:none;stroke:var(--matline);stroke-width:.25"/></pattern>
+    <marker id="aL" viewBox="0 0 6 6" refX="5.6" refY="3" markerWidth="2.2" markerHeight="2.2" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L6 3L0 6z" style="fill:var(--onmat)"/></marker>
+    <marker id="aD" viewBox="0 0 6 6" refX="5.6" refY="3" markerWidth="2.2" markerHeight="2.2" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L6 3L0 6z" style="fill:var(--ink)"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+<div class="hero">
+  <div class="hero-text noprint">
+    <p class="eyebrow">Robot Moon · vỏ bìa trắng, không cần mica</p>
+    <h1>Moon gấu trúc</h1>
+    <p class="lede">Làm lại ngoại hình bằng chính tấm bìa trắng nhóm đang có. Thân và đầu bo tròn góc, giấu hết mạch và dây, mỗi linh kiện trở thành một bộ phận của con gấu trúc. Nền đen của màn TFT nối liền với decal đen thành hai mảng quanh mắt, nên màn hình không còn là một ô chữ nhật dán lên mặt.</p>
+    <div class="chips" id="chips"></div>
+    <p class="note">Mọi hình vẽ và khuôn cắt bên dưới tính từ các số đo ở mục <a href="#so-do">Số đo</a>. Sửa một số là hình, khuôn và cảnh báo đổi theo.</p>
+  </div>
+  <div class="stage noprint" id="stage">
+    <div class="views">
+      <figure><div id="fv"></div><figcaption>Nhìn chính diện</figcaption></figure>
+      <figure><div id="sv"></div><figcaption>Nhìn bên hông</figcaption></figure>
+    </div>
+    <div class="stage-bar">
+      <span class="note">Tỉ lệ đúng theo mm. Mắt trên màn là mặt <span class="mono">neutral</span>.</span>
+      <button type="button" id="xray" aria-pressed="false">Nhìn xuyên vỏ</button>
+    </div>
+  </div>
+</div>
+
+<section class="noprint">
+  <header>
+    <p class="eyebrow">Vì sao bản hiện tại trông thô</p>
+    <h2>Bốn chỗ cần sửa, không phải đổi vật liệu</h2>
+  </header>
+  <div class="why">
+    <div><b>Mạch lộ ra</b><span>Perfboard, viền đỏ của mô-đun màn, dây jumper và hộp pin đều nhìn thấy. Bản mới chỉ để lộ màn, ống kính, mắt siêu âm và lưới loa.</span></div>
+    <div><b>Đầu chỉ là một tấm mạch</b><span>Không có khối, nhìn ngang mỏng như tờ giấy. Bản mới là một khối đầu sâu 6 cm, to hơn thân theo tỉ lệ chibi.</span></div>
+    <div><b>Hộp vuông sắc cạnh</b><span>Bốn góc vuông làm robot giống thùng carton. Bo tròn góc bằng cách rạch rãnh mặt trong, không cần dụng cụ gì thêm.</span></div>
+    <div><b>Mép cắt xơ, keo lộ</b><span>Dao cùn và một lượt cắt làm mép xơ. Bản mới dùng dao mới, cắt ba lượt nhẹ, keo chỉ ở mặt trong.</span></div>
+  </div>
+</section>
+
+<section class="noprint">
+  <header>
+    <p class="eyebrow">Ý tưởng</p>
+    <h2>Mỗi linh kiện là một bộ phận của gấu trúc</h2>
+    <p class="muted">Tên robot là Moon nên camera nằm trong chiếc kẹp tóc hình trăng khuyết. Camera nằm lệch sang phải trên tấm mạch, và kẹp tóc biến chỗ lệch đó thành chủ ý.</p>
+  </header>
+  <div class="tbl"><table>
+    <thead><tr><th>Linh kiện</th><th>Thành bộ phận</th><th>Cần khoét</th></tr></thead>
+    <tbody id="maptbl"></tbody>
+  </table></div>
+</section>
+
+<section id="so-do" class="noprint">
+  <header>
+    <p class="eyebrow">Số đo</p>
+    <h2>Đo trước khi cắt</h2>
+    <p class="muted">Ô viền cam là số ước lượng từ ảnh chụp. Đo lại bằng thước trên robot thật rồi sửa vào đây. Các số được lưu trong trình duyệt này.</p>
+  </header>
+  <div class="fields" id="fields"></div>
+  <div class="row"><button type="button" class="ghost" id="reset">Trả về số ước lượng</button></div>
+  <div class="checks" id="checks" aria-live="polite"></div>
+</section>
+
+<section id="khuon">
+  <header>
+    <p class="eyebrow noprint">Khuôn cắt</p>
+    <h2>Khuôn cắt Moon</h2>
+    <p class="muted noprint">Mỗi khuôn có thước 50 mm ở góc dưới. Muốn in 1:1: mở file <span class="mono">bao-cao/moon-vo-bia.html</span> trên máy bằng Chrome, nhấn <span class="kbd">Ctrl</span>+<span class="kbd">P</span>, chọn khổ A4, Tỉ lệ 100% (không chọn “Vừa trang”). In xong đo lại thước 50 mm. Dán bản in lên bìa bằng băng keo giấy rồi rạch theo. Dải dài tự in khổ ngang.</p>
+  </header>
+  <div class="row noprint">
+    <button type="button" id="real" aria-pressed="false">Xem đúng cỡ mm</button>
+    <span class="legend" id="legend"></span>
+  </div>
+  <div class="tpls" id="tpls"></div>
+</section>
+
+<section class="noprint">
+  <header>
+    <p class="eyebrow">Uốn góc bo</p>
+    <h2>Rạch rãnh mặt trong để bìa cong</h2>
+    <p class="muted">Bìa phẳng chỉ uốn được khi phần bên trong có chỗ co lại. Rạch các đường song song ở mặt trong, sâu khoảng 2/3 tấm, giữ nguyên lớp mặt ngoài. Vùng rạch trên khuôn có nền đỏ nhạt.</p>
+  </header>
+  <div class="split">
+    <div class="panel" id="kerfdraw"></div>
+    <div class="panel">
+      <div class="stats" id="kerfstats"></div>
+      <ul class="list">
+        <li><b>Foam board</b> (lõi xốp kẹp giữa hai lớp giấy, nhìn mép thấy 3 lớp): rạch xuyên lớp giấy trong và phần lớn lõi xốp. Lớp giấy ngoài phải còn nguyên, rách là gãy.</li>
+        <li><b>Fomex</b> (nhựa PVC xốp đặc, mép cắt đồng màu): rạch nông hơn, khoảng 1/2 tấm, hoặc hơ máy sấy tóc 30–60 giây rồi uốn quanh lon nước ngọt (bán kính ~33 mm).</li>
+        <li>Rạch thử một mẩu thừa trước. Uốn thấy gợn sóng ở mặt ngoài thì rạch dày hơn (giảm khoảng cách đường rạch).</li>
+        <li>Khoét hết lỗ khi dải còn phẳng, rồi mới rạch. Không đặt lỗ trong vùng rạch.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="noprint">
+  <header>
+    <p class="eyebrow">Lắp ráp</p>
+    <h2>Thứ tự làm</h2>
+  </header>
+  <ol class="steps" id="steps"></ol>
+</section>
+
+<section class="noprint">
+  <header>
+    <p class="eyebrow">Vật liệu</p>
+    <h2>Gần như chỉ tốn decal và băng keo</h2>
+  </header>
+  <div class="split">
+    <div class="panel">
+      <h3>Cần mua thêm</h3>
+      <div class="tbl" style="border:0"><table style="min-width:0">
+        <tbody>
+          <tr><td>Decal đen mờ A4</td><td>tai, mảng mắt, tay, dải chân, mũi, đuôi, nắp bánh</td><td class="mono">~10k</td></tr>
+          <tr><td>Decal vàng A4</td><td>trăng khuyết (hoặc bút sơn vàng)</td><td class="mono">~10k</td></tr>
+          <tr><td>Băng keo giấy</td><td>dán khuôn, ráp thử, viền mép</td><td class="mono">~10k</td></tr>
+          <tr><td>Băng keo xốp 2 mặt</td><td>gắn mạch, gắn khối chân lên mica</td><td class="mono">~10k</td></tr>
+          <tr><td>Nhám dính dạng chấm</td><td>nắp lưng đầu, nắp thân (hoặc 4 nam châm 10×3)</td><td class="mono">~10k</td></tr>
+          <tr><td>Lưỡi dao rọc giấy mới</td><td>1 vỉ, bẻ lưỡi thường xuyên</td><td class="mono">~10k</td></tr>
+          <tr><td>Đã có</td><td>bìa trắng, keo nến, tăm tre, bút hồng</td><td class="mono">0đ</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note" id="area"></p>
+    </div>
+    <div class="panel">
+      <h3>Để vỏ trông gọn</h3>
+      <ul class="list">
+        <li>Mép xơ là do dao cùn. Dùng thước sắt, lưỡi mới, cắt 3 lượt nhẹ thay vì 1 lượt mạnh, dao nghiêng thấp.</li>
+        <li>Lỗ tròn: vẽ bằng compa, cắt nhiều đoạn ngắn bằng mũi dao, rồi chà giấy nhám quấn quanh bút chì.</li>
+        <li>Viền mép bìa lộ quanh mặt đầu: dán một vòng băng keo giấy trắng hoặc dải decal đen 5 mm, trông như viền tivi.</li>
+        <li>Keo nến chỉ bôi ở mặt trong, từng đoạn 3–4 cm. Không dùng keo 502 hay sơn xịt với foam board, dung môi làm tan lõi xốp.</li>
+        <li>Decal: dán bản in lên mặt decal bằng băng keo giấy rồi cắt xuyên cả hai lớp. Dán từ giữa ra ngoài, miết bằng thẻ nhựa.</li>
+        <li>Dây nối đầu với thân để dư ~15 cm và bó bằng dây rút, để nhấc nắp thân mà không giật dây.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+const DEF={t:5,kerf:4,wheelGap:112,wheelD:65,wheelW:26,axleX:74,chassisY:33,
+  bW:100,bL:135,bH:75,bR:24,headInset:28,legH:26,
+  hW:124,hH:116,hD:60,hR:30,earD:44,earAng:122,
+  pbW:70,pbH:90,pbGap:4,scrX:27,scrY:66,winW:50,winH:38,modX:-9,modY:46,modW:77,modH:43,
+  camX:45,camY:14,camGap:3,micX:32,micY:41,standH:12,
+  sensSp:26,sensD:16,sensY:13,spkD:40,grilleY:26,btnD:13,hubD:44};
+const PAW_Y=19, PAW_IN=24;
+
+const GROUPS=[
+ {g:"Vật liệu & khung xe",items:[
+  ["t","Độ dày tấm bìa","Fomex/foam board thường 3 hoặc 5 mm"],
+  ["kerf","Khoảng cách đường rạch","3–5 mm; nhỏ hơn thì cong mượt hơn"],
+  ["wheelGap","Khoảng giữa 2 mặt trong bánh","Từ mặt trong bánh trái tới bánh phải",1],
+  ["wheelD","Đường kính bánh","Bánh TT trong kit thường 65 mm"],
+  ["wheelW","Bề rộng bánh",""],
+  ["axleX","Tâm bánh cách mép trước thân","Đo dọc theo khung",1],
+  ["chassisY","Mặt mica cách mặt bàn","Thường gần bằng bán kính bánh",1]]},
+ {g:"Thân",items:[
+  ["bW","Rộng","Phải nhỏ hơn khe giữa 2 bánh"],
+  ["bL","Dài","Đủ chứa hộp pin 2×18650 + mạch"],
+  ["bH","Cao",""],
+  ["bR","Bán kính bo góc","Nhìn từ trên xuống"],
+  ["headInset","Đầu lùi sau mép trước","Chừa chỗ cho 2 bàn chân (nút bấm)"],
+  ["legH","Cao dải chân đen","Phủ qua 2 mắt siêu âm"]]},
+ {g:"Đầu",items:[
+  ["hW","Rộng",""],["hH","Cao","Không tính tai"],["hD","Sâu",""],
+  ["hR","Bán kính bo góc","Nhìn chính diện"],
+  ["earD","Đường kính tai",""],
+  ["earAng","Góc đặt tai (độ)","90 = đỉnh đầu, 180 = ngang hông"]]},
+ {g:"Tấm mạch đầu (đo trên mạch thật)",items:[
+  ["pbW","Perfboard rộng","",1],["pbH","Perfboard cao","",1],
+  ["pbGap","Khe hở phía trên perfboard","Giữa mép trên mạch và trần đầu"],
+  ["scrX","Tâm vùng sáng của màn → mép trái perfboard","",1],
+  ["scrY","Tâm vùng sáng của màn → mép trên perfboard","",1],
+  ["winW","Cửa sổ màn: rộng","Màn 2.4″ sáng 49×37 mm"],
+  ["winH","Cửa sổ màn: cao",""],
+  ["modX","Mép trái mô-đun màn → mép trái perfboard","Âm nghĩa là lòi ra ngoài",1],
+  ["modY","Mép trên mô-đun màn → mép trên perfboard","",1],
+  ["modW","Mô-đun màn: rộng","Viền đỏ, gồm hàng chân"],
+  ["modH","Mô-đun màn: cao",""],
+  ["camX","Tâm ống kính → mép trái perfboard","",1],
+  ["camY","Tâm ống kính → mép trên perfboard","",1],
+  ["camGap","Ống kính lùi sau tấm mặt","Kê camera sát mặt để lỗ nhỏ",1],
+  ["micX","Lỗ mic → mép trái perfboard","",1],
+  ["micY","Lỗ mic → mép trên perfboard","",1],
+  ["standH","Mặt kính màn → mặt mạch phía trên","Chiều cao 2 cột đỡ",1]]},
+ {g:"Mặt trước thân & chi tiết",items:[
+  ["sensSp","HC-SR04: tâm mắt này tới tâm mắt kia","",1],
+  ["sensD","Đường kính mắt siêu âm",""],
+  ["sensY","Tâm mắt siêu âm cách đáy thân","",1],
+  ["spkD","Đường kính loa",""],
+  ["grilleY","Tâm lưới loa cách mép trên thân",""],
+  ["btnD","Lỗ nút bấm","Nút 12×12 có nắp tròn"],
+  ["hubD","Đường kính nắp bánh","Che vừa phần nan vàng"]]}
+];
+
+let P=Object.assign({},DEF);
+try{const s=JSON.parse(localStorage.getItem("moon-vo-bia-v1")||"null");if(s&&typeof s==="object"){for(const k in DEF){if(typeof s[k]==="number"&&isFinite(s[k]))P[k]=s[k];}}}catch(e){}
+function save(){try{localStorage.setItem("moon-vo-bia-v1",JSON.stringify(P));}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const fm=n=>{const v=Math.round(n*2)/2;return (Number.isInteger(v)?String(v):v.toFixed(1)).replace(".",",");};
+const q=n=>Math.round(n*100)/100;
+function rr(x,y,w,h,r){r=Math.max(0,Math.min(r,w/2,h/2));x=q(x);y=q(y);w=q(w);h=q(h);r=q(r);
+  return `M${x+r} ${y}H${q(x+w-r)}A${r} ${r} 0 0 1 ${q(x+w)} ${q(y+r)}V${q(y+h-r)}A${r} ${r} 0 0 1 ${q(x+w-r)} ${q(y+h)}H${q(x+r)}A${r} ${r} 0 0 1 ${x} ${q(y+h-r)}V${q(y+r)}A${r} ${r} 0 0 1 ${q(x+r)} ${y}Z`;}
+function inRR(px,py,x,y,w,h,r){if(px<x-1e-6||px>x+w+1e-6||py<y-1e-6||py>y+h+1e-6)return false;
+  const cx=Math.min(Math.max(px,x+r),x+w-r),cy=Math.min(Math.max(py,y+r),y+h-r);return (px-cx)**2+(py-cy)**2<=r*r+1e-6;}
+function rectIn(R,x,y,w,h,r){return [[R.x,R.y],[R.x+R.w,R.y],[R.x,R.y+R.h],[R.x+R.w,R.y+R.h]].every(([a,b])=>inRR(a,b,x,y,w,h,r));}
+function dimH(x1,x2,y,lab,cls){return `<g class="dim${cls?" "+cls:""}"><line x1="${q(x1)}" y1="${q(y)}" x2="${q(x2)}" y2="${q(y)}"/><text x="${q((x1+x2)/2)}" y="${q(y-1.2)}" text-anchor="middle">${lab}</text></g>`;}
+function dimV(x,y1,y2,lab,cls){return `<g class="dim${cls?" "+cls:""}"><line x1="${q(x)}" y1="${q(y1)}" x2="${q(x)}" y2="${q(y2)}"/><text transform="translate(${q(x-1.2)} ${q((y1+y2)/2)}) rotate(-90)" text-anchor="middle">${lab}</text></g>`;}
+function circ(cx,cy,r,cls,extra){return `<circle class="${cls}" cx="${q(cx)}" cy="${q(cy)}" r="${q(r)}"${extra||""}/>`;}
+function rect(x,y,w,h,cls,rx,extra){return `<rect class="${cls}" x="${q(x)}" y="${q(y)}" width="${q(w)}" height="${q(h)}"${rx?` rx="${rx}"`:""}${extra||""}/>`;}
+function grillePts(r,s){const pts=[],n=Math.ceil(r/s)+1;for(let j=-n;j<=n;j++){const y=j*s*0.866,o=(j&1)?s/2:0;for(let i=-n;i<=n;i++){const x=i*s+o;if(x*x+y*y<=r*r)pts.push([x,y]);}}return pts;}
+
+function derive(p){
+  const d={},t=p.t;
+  d.sx=p.hW/2; d.pbT=t+p.pbGap; d.sy=d.pbT+p.scrY; d.pbL=d.sx-p.scrX;
+  d.win={x:d.sx-p.winW/2,y:d.sy-p.winH/2,w:p.winW,h:p.winH};
+  d.winB=d.win.y+p.winH;
+  d.pb={x:d.pbL,y:d.pbT,w:p.pbW,h:p.pbH};
+  d.mod={x:d.pbL+p.modX,y:d.pbT+p.modY,w:p.modW,h:p.modH};
+  d.cam={x:d.pbL+p.camX,y:d.pbT+p.camY};
+  d.camD=Math.ceil(8+2*(p.camGap+t)*Math.tan(33*Math.PI/180));
+  d.mic={x:d.pbL+p.micX,y:d.pbT+p.micY};
+  const a=p.earAng*Math.PI/180,off=p.hR+p.earD*0.22;
+  d.earL={x:p.hR+off*Math.cos(a),y:p.hR-off*Math.sin(a)};
+  d.earR={x:p.hW-d.earL.x,y:d.earL.y};
+  d.earTop=Math.min(d.earL.y-p.earD/2,0);
+  d.arcB=Math.PI/2*p.bR; d.bSide=Math.max(0,p.bL-2*p.bR); d.bFront=Math.max(0,p.bW-2*p.bR);
+  d.bHalf=d.bSide+2*d.arcB+d.bFront;
+  d.arcH=Math.PI/2*p.hR; d.hFlatW=Math.max(0,p.hW-2*p.hR); d.hFlatH=Math.max(0,p.hH-2*p.hR);
+  d.hHalf=d.hFlatW+d.hFlatH+2*d.arcH;
+  d.ny=d.winB+6.5;
+  d.mouth=d.ny+13<p.hH-t-1.5;
+  d.totalH=p.chassisY+p.bH+p.hH-d.earTop;
+  d.totalW=Math.max(p.hW,p.wheelGap+2*p.wheelW);
+  d.grille=grillePts(p.spkD/2-3,5);
+  d.kB=Math.max(2,Math.round(d.arcB/p.kerf))-1; d.kH=Math.max(2,Math.round(d.arcH/p.kerf))-1;
+  return d;
+}
+
+/* ---------- shared face decorations (head coords, origin = head top-left outer) ---------- */
+function maskShapes(p,d,cls){
+  const {sx,sy}=d,w=p.winW,h=p.winH,ex=w*0.36,rx=w*0.36,ry=h*0.66,cy=sy+2;
+  return `<rect class="${cls}" x="${q(sx-w/2-2)}" y="${q(sy-h/2-2)}" width="${q(w+4)}" height="${q(h+4)}" rx="4"/>`+
+   `<ellipse class="${cls}" cx="${q(sx-ex)}" cy="${q(cy)}" rx="${q(rx)}" ry="${q(ry)}" transform="rotate(32 ${q(sx-ex)} ${q(cy)})"/>`+
+   `<ellipse class="${cls}" cx="${q(sx+ex)}" cy="${q(cy)}" rx="${q(rx)}" ry="${q(ry)}" transform="rotate(-32 ${q(sx+ex)} ${q(cy)})"/>`;
+}
+function moonGeom(d){const R=d.camD/2;return {c1:{x:d.cam.x-3,y:d.cam.y+1,r:R+6},c2:{x:d.cam.x+2.5,y:d.cam.y-2,r:R+3.5}};}
+function nosePath(d){const x=d.sx,y=d.ny;return `M${q(x-6.5)} ${q(y)}Q${q(x)} ${q(y-1.4)} ${q(x+6.5)} ${q(y)}Q${q(x+5.2)} ${q(y+5)} ${q(x)} ${q(y+7)}Q${q(x-5.2)} ${q(y+5)} ${q(x-6.5)} ${q(y)}Z`;}
+function mouthPath(d){const x=d.sx,y=d.ny+7;return `M${q(x)} ${q(y)}v2.4M${q(x-5)} ${q(y+2.6)}q2.5 3 5 0q2.5 3 5 0`;}
+function cheeks(p,d,cls){const dx=p.winW/2+17,y=d.winB+3;return `<ellipse class="${cls}" cx="${q(d.sx-dx)}" cy="${q(y)}" rx="5.2" ry="3.2"/><ellipse class="${cls}" cx="${q(d.sx+dx)}" cy="${q(y)}" rx="5.2" ry="3.2"/>`;}
+function micDots(d,cls){const m=d.mic;return [[0,-1.9],[-1.8,1.2],[1.8,1.2]].map(([a,b])=>circ(m.x+a,m.y+b,1,cls)).join("");}
+function pawToes(cx,cy,k,cls){return [-150,-114,-66,-30].map(a=>{const r=a*Math.PI/180;return circ(cx+Math.cos(r)*10*k,cy+Math.sin(r)*10*k,2.7*k,cls);}).join("");}
+
+/* ---------- HERO: front view ---------- */
+function frontView(p,d){
+  const bt=-(p.chassisY+p.bH),bb=-p.chassisY,ht=bt-p.hH,hx=-p.hW/2,bx=-p.bW/2;
+  const half=Math.max(p.hW/2,p.wheelGap/2+p.wheelW,p.bW/2)+8;
+  const top=ht+d.earTop-6;
+  const sp=Math.min(.49,p.bR/p.bW);
+  const mg=moonGeom(d);
+  let s=`<svg class="ill" viewBox="${q(-half)} ${q(top)} ${q(2*half)} ${q(-top+6)}" role="img" aria-label="Robot Moon nhìn chính diện">`;
+  s+=`<defs><linearGradient id="fvSh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".30"/><stop offset="${q(sp*.5)}" stop-color="#000" stop-opacity=".1"/><stop offset="${q(sp)}" stop-color="#000" stop-opacity="0"/><stop offset="${q(1-sp)}" stop-color="#000" stop-opacity="0"/><stop offset="${q(1-sp*.5)}" stop-color="#000" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>`+
+    `<linearGradient id="fvHd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".07"/></linearGradient>`+
+    `<mask id="fvMoon" maskUnits="userSpaceOnUse" x="-500" y="-500" width="1000" height="1000"><circle cx="${q(mg.c1.x)}" cy="${q(mg.c1.y)}" r="${q(mg.c1.r)}" fill="#fff"/><circle cx="${q(mg.c2.x)}" cy="${q(mg.c2.y)}" r="${q(mg.c2.r)}" fill="#000"/></mask>`+
+    `<clipPath id="fvFace"><path d="${rr(0,0,p.hW,p.hH,p.hR)}"/></clipPath></defs>`;
+  s+=`<ellipse cx="0" cy="1.5" rx="${q(half-6)}" ry="3.2" style="fill:var(--shadow)" opacity=".18"/>`;
+  s+=`<g class="shell">`;
+  // wheels
+  [-1,1].forEach(sg=>{const x=sg>0?p.wheelGap/2:-p.wheelGap/2-p.wheelW;
+    s+=`<rect x="${q(x)}" y="${q(-p.wheelD)}" width="${p.wheelW}" height="${p.wheelD}" rx="6" style="fill:var(--tire)"/>`;
+    for(let i=1;i<6;i++)s+=`<line x1="${q(x+3)}" x2="${q(x+p.wheelW-3)}" y1="${q(-p.wheelD+i*p.wheelD/6)}" y2="${q(-p.wheelD+i*p.wheelD/6)}" style="stroke:var(--tread)" stroke-width="1.4"/>`;});
+  // chassis + caster
+  s+=`<rect x="${q(-p.wheelGap/2+2)}" y="${q(bb)}" width="${q(p.wheelGap-4)}" height="3" style="fill:var(--acrylic)" opacity=".9"/>`;
+  s+=`<rect x="-5" y="${q(bb+3)}" width="10" height="${q(p.chassisY-3-8)}" style="fill:var(--steel)"/><circle cx="0" cy="-5" r="5" style="fill:var(--tire)"/>`;
+  // body
+  s+=`<g transform="translate(${q(bx)} ${q(bt)})">`;
+  s+=rect(0,0,p.bW,p.bH,"","",` style="fill:var(--board)"`);
+  s+=`<path d="M0 0H${q(p.bR+2)}V${q(p.bH-p.legH-8)}Q${q(p.bR+2)} ${q(p.bH-p.legH)} ${q(p.bR-6)} ${q(p.bH-p.legH)}H0Z" style="fill:var(--decal)"/>`;
+  s+=`<path d="M${p.bW} 0H${q(p.bW-p.bR-2)}V${q(p.bH-p.legH-8)}Q${q(p.bW-p.bR-2)} ${q(p.bH-p.legH)} ${q(p.bW-p.bR+6)} ${q(p.bH-p.legH)}H${p.bW}Z" style="fill:var(--decal)"/>`;
+  s+=rect(0,p.bH-p.legH,p.bW,p.legH,"",0,` style="fill:var(--decal)"`);
+  d.grille.forEach(([x,y])=>{s+=circ(p.bW/2+x,p.grilleY+y,1.25,"",` style="fill:var(--ink)" opacity=".75"`);});
+  [-1,1].forEach(sg=>{const cx=p.bW/2+sg*p.sensSp/2,cy=p.bH-p.sensY;
+    s+=circ(cx,cy,p.sensD/2,"",` style="fill:var(--silver)"`)+circ(cx,cy,p.sensD/2-1.6,"",` style="fill:var(--steel)"`)+circ(cx,cy,p.sensD/2-3,"",` style="fill:var(--silver)" opacity=".55"`)+circ(cx,cy,1.6,"",` style="fill:var(--steel)"`);});
+  s+=rect(0,0,p.bW,p.bH,"",0,` fill="url(#fvSh)"`);
+  s+=rect(0,0,p.bW,p.bH,"",0,` style="fill:none;stroke:var(--ink)" stroke-width=".7"`);
+  s+=`</g>`;
+  // head
+  s+=`<g transform="translate(${q(hx)} ${q(ht)})">`;
+  [d.earL,d.earR].forEach(e=>{s+=circ(e.x,e.y,p.earD/2,"",` style="fill:var(--decal)"`)+circ(e.x,e.y,p.earD/2-7,"",` style="fill:var(--ink)" opacity=".5"`);});
+  s+=`<path d="${rr(0,0,p.hW,p.hH,p.hR)}" style="fill:var(--board);stroke:var(--ink)" stroke-width=".8"/>`;
+  s+=`<path d="${rr(p.t,p.t,p.hW-2*p.t,p.hH-2*p.t,p.hR-p.t)}" style="fill:none;stroke:var(--boardedge)" stroke-width=".8"/>`;
+  s+=`<g clip-path="url(#fvFace)">`+cheeks(p,d,"")
+    .replace(/class=""/g,`style="fill:var(--pink)" opacity=".85"`)+maskShapes(p,d,"").replace(/class=""/g,`style="fill:var(--decal)"`)+`</g>`;
+  s+=rect(d.win.x,d.win.y,p.winW,p.winH,"",1.5,` style="fill:var(--screen)"`);
+  const ew=p.winW*0.19,eh=p.winH*0.46;
+  [-1,1].forEach(sg=>{s+=`<rect class="eye" x="${q(d.sx+sg*p.winW*0.2-ew/2)}" y="${q(d.sy-eh/2-1)}" width="${q(ew)}" height="${q(eh)}" rx="${q(ew*0.42)}" style="fill:var(--eye)"/>`;});
+  s+=`<path d="${nosePath(d)}" style="fill:var(--decal)"/>`;
+  if(d.mouth)s+=`<path d="${mouthPath(d)}" style="fill:none;stroke:var(--decal)" stroke-width="1.1" stroke-linecap="round"/>`;
+  s+=micDots(d,"").replace(/class=""/g,`style="fill:var(--ink)"`);
+  s+=`<circle cx="${q(mg.c1.x)}" cy="${q(mg.c1.y)}" r="${q(mg.c1.r)}" style="fill:var(--moon)" mask="url(#fvMoon)"/>`;
+  s+=circ(d.cam.x,d.cam.y,d.camD/2,"",` style="fill:var(--screen)"`)+circ(d.cam.x,d.cam.y,Math.min(4,d.camD/2-1.5),"",` style="fill:#1c2a36;stroke:var(--steel)" stroke-width=".6"`)+circ(d.cam.x-1.2,d.cam.y-1.2,.9,"",` style="fill:#fff" opacity=".8"`);
+  s+=`<path d="${rr(0,0,p.hW,p.hH,p.hR)}" fill="url(#fvHd)"/>`;
+  s+=`</g>`;
+  // paws (buttons on lid, in front of head)
+  [-1,1].forEach(sg=>{s+=`<ellipse cx="${q(sg*(p.bW/2-PAW_IN))}" cy="${q(bt-.6)}" rx="${q(p.btnD/2-1)}" ry="2" style="fill:var(--pink);stroke:var(--ink)" stroke-width=".5"/>`;});
+  s+=`</g>`;
+  // x-ray
+  let x=`<g class="xr">`;
+  x+=`<g transform="translate(${q(hx)} ${q(ht)})">`+rect(d.pb.x,d.pb.y,d.pb.w,d.pb.h,"xr-s")+rect(d.mod.x,d.mod.y,d.mod.w,d.mod.h,"xr-f")+rect(d.pb.x+3,d.pb.y+2,d.pb.w-6,34,"xr-s")+rect(d.cam.x-4.5,d.cam.y-4.5,9,9,"xr-f")+
+     `<text class="xr-l" x="${q(d.pb.x+5)}" y="${q(d.pb.y+8)}">ESP32-S3</text><text class="xr-l" x="${q(d.mod.x+3)}" y="${q(d.mod.y+d.mod.h-3)}">mô-đun TFT</text></g>`;
+  x+=`<g transform="translate(${q(bx)} ${q(bt)})">`+circ(p.bW/2,p.grilleY,p.spkD/2,"xr-f")+rect(p.bW/2-22.5,p.bH-p.sensY-10,45,20,"xr-s")+rect(p.bW/2-38,p.bH-23,76,21,"xr-s")+
+     `<text class="xr-l" x="${q(p.bW/2)}" y="${q(p.grilleY+1.2)}" text-anchor="middle">loa</text><text class="xr-l" x="${q(p.bW/2)}" y="${q(p.bH-24.5)}" text-anchor="middle">hộp pin phía sau</text></g>`;
+  x+=`</g>`;
+  return s+x+`</svg>`;
+}
+
+/* ---------- HERO: side view (robot faces left) ---------- */
+function sideView(p,d){
+  const bt=-(p.chassisY+p.bH),bb=-p.chassisY,ht=bt-p.hH,hx=p.headInset;
+  const top=ht+d.earTop-6,L=-14,R=p.bL+14;
+  const sp=Math.min(.49,p.bR/p.bL);
+  let s=`<svg class="ill" viewBox="${L} ${q(top)} ${R-L} ${q(-top+6)}" role="img" aria-label="Robot Moon nhìn bên hông">`;
+  s+=`<defs><linearGradient id="svSh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset="${q(sp)}" stop-color="#000" stop-opacity="0"/><stop offset="${q(1-sp)}" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>`+
+    `<linearGradient id="svHd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".2"/><stop offset="${q(Math.min(.49,p.hR/p.hH))}" stop-color="#000" stop-opacity="0"/><stop offset="${q(1-Math.min(.49,p.hR/p.hH))}" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>`;
+  s+=`<ellipse cx="${q(p.bL/2)}" cy="1.5" rx="${q(p.bL/2+6)}" ry="3.2" style="fill:var(--shadow)" opacity=".18"/>`;
+  s+=`<g class="shell">`;
+  s+=`<rect x="-4" y="${q(bb)}" width="${q(p.bL+8)}" height="3" style="fill:var(--acrylic)" opacity=".9"/>`;
+  s+=`<rect x="10" y="${q(bb+3)}" width="6" height="${q(p.chassisY-3-9)}" style="fill:var(--steel)"/><circle cx="13" cy="-6" r="6" style="fill:var(--tire)"/>`;
+  // ears (edge-on)
+  const ey1=ht+d.earL.y-p.earD/2,ey2=ht+Math.max(d.earL.y+p.earD*0.1,8);
+  s+=`<ellipse cx="${q(hx+8.5)}" cy="${q(ht+d.earL.y)}" rx="7" ry="${q(p.earD/2)}" style="fill:var(--decal)"/>`;
+  // head
+  s+=rect(hx,ht,p.hD,p.hH,"",0,` style="fill:var(--board);stroke:var(--ink)" stroke-width=".8"`)+rect(hx,ht,p.hD,p.hH,"",0,` fill="url(#svHd)"`);
+  s+=`<line x1="${q(hx+p.hD-p.t)}" x2="${q(hx+p.hD-p.t)}" y1="${q(ht+3)}" y2="${q(bt-3)}" style="stroke:var(--boardedge)" stroke-width=".7" stroke-dasharray="2 1.5"/>`;
+  // body
+  s+=rect(0,bt,p.bL,p.bH,"",0,` style="fill:var(--board)"`);
+  s+=`<path d="M0 ${q(bt)}H${q(p.bR+4)}V${q(bb-p.legH-8)}Q${q(p.bR+4)} ${q(bb-p.legH)} ${q(p.bR-4)} ${q(bb-p.legH)}H0Z" style="fill:var(--decal)"/>`;
+  s+=rect(0,bb-p.legH,p.bL,p.legH,"",0,` style="fill:var(--decal)"`);
+  s+=rect(0,bt,p.bL,p.bH,"",0,` fill="url(#svSh)"`)+rect(0,bt,p.bL,p.bH,"",0,` style="fill:none;stroke:var(--ink)" stroke-width=".7"`);
+  s+=rect(-7,bb-p.sensY-p.sensD/2,7,p.sensD,"",1,` style="fill:var(--silver);stroke:var(--steel)" stroke-width=".5"`);
+  s+=rect(p.bL,bt+p.bH*0.42-11,6,22,"",3,` style="fill:var(--decal)"`);
+  s+=rect(PAW_Y-p.btnD/2+1,bt-2.2,p.btnD-2,2.4,"",1,` style="fill:var(--pink);stroke:var(--ink)" stroke-width=".5"`);
+  // wheel + paw hubcap
+  const wx=p.axleX,wy=-p.chassisY,wr=p.wheelD/2,k=p.hubD/44;
+  s+=circ(wx,wy,wr,"",` style="fill:var(--tire)"`)+circ(wx,wy,wr-4,"",` style="fill:none;stroke:var(--tread)" stroke-width="1.4" stroke-dasharray="3 3"`);
+  s+=circ(wx,wy,p.hubD/2,"",` style="fill:var(--decal);stroke:var(--tread)" stroke-width=".8"`);
+  s+=`<ellipse cx="${q(wx)}" cy="${q(wy+3.5*k)}" rx="${q(7.5*k)}" ry="${q(6.2*k)}" style="fill:var(--pink)"/>`+pawToes(wx,wy+1.5*k,k,"").replace(/class=""/g,`style="fill:var(--pink)"`);
+  s+=`</g>`;
+  // x-ray
+  let x=`<g class="xr">`;
+  const fz=hx+p.t;
+  x+=rect(fz,ht+d.mod.y,3.5,d.mod.h,"xr-f")+rect(fz+p.standH,ht+d.pb.y,1.8,d.pb.h,"xr-f")+rect(fz+p.camGap,ht+d.pb.y+2,p.standH-p.camGap,34,"xr-s");
+  x+=`<text class="xr-l" x="${q(fz+p.standH+3)}" y="${q(ht+d.pb.y+d.pb.h/2)}">perfboard</text><text class="xr-l" x="${q(fz+5)}" y="${q(ht+d.mod.y-2)}">TFT</text>`;
+  x+=rect(p.t,bt+p.grilleY-p.spkD/2,20,p.spkD,"xr-f")+`<text class="xr-l" x="${q(p.t+22)}" y="${q(bt+p.grilleY+1)}">loa</text>`;
+  x+=rect(p.t,bb-p.sensY-10,2,20,"xr-f");
+  x+=rect(p.bL-p.t-80,bb-22,78,21,"xr-s")+`<text class="xr-l" x="${q(p.bL-p.t-41)}" y="${q(bb-10)}" text-anchor="middle">pin 2×18650</text>`;
+  x+=rect(30,bb-38,60,12,"xr-s")+`<text class="xr-l" x="60" y="${q(bb-30.5)}" text-anchor="middle">DevKit + TB6612</text>`;
+  x+=rect(p.bL-p.t-3,bb-18,3,14,"xr-f");
+  x+=`<path d="M${q(hx+p.hD/2)} ${q(bt-14)}V${q(bt+18)}Q${q(hx+p.hD/2)} ${q(bb-40)} 60 ${q(bb-38)}" class="xr-s"/>`;
+  x+=`</g>`;
+  return s+x+`</svg>`;
+}
+
+/* ---------- TEMPLATES ---------- */
+function panel(o){
+  const m=o.m||14,W=o.w+2*m,H=o.h+2*m+9;
+  let ruler="";
+  if(W>=64){const y=o.h+m+3.5,x0=-m+4;ruler=`<g class="ruler"><line x1="${x0}" y1="${q(y)}" x2="${x0+50}" y2="${q(y)}"/>`;
+    for(let i=0;i<=50;i+=5)ruler+=`<line x1="${x0+i}" x2="${x0+i}" y1="${q(y)}" y2="${q(y-(i%10?1.2:2.4))}"/>`;
+    ruler+=`<text x="${x0+52}" y="${q(y+.9)}">50 mm · đo để kiểm tra tỉ lệ in</text></g>`;}
+  const svg=`<svg viewBox="${-m} ${-m} ${q(W)} ${q(H)}" width="${q(W)}mm" height="${q(H)}mm" role="img" aria-label="${o.title}">`+
+    `<rect class="matbg" x="${-m}" y="${-m}" width="${q(W)}" height="${q(H)}"/><rect class="grid" x="${-m}" y="${-m}" width="${q(W)}" height="${q(H)}"/>`+(o.defs?`<defs>${o.defs}</defs>`:"")+o.body+ruler+`</svg>`;
+  return `<article class="tplcard${o.wide?" wide":""}"><div class="tplhead"><h3>${o.title}</h3><span class="qty">${o.qty}</span></div><div class="tplsvg">${svg}</div>${o.note?`<p class="tplnote">${o.note}</p>`:""}</article>`;
+}
+function zones(list){let u=0;return list.map(z=>{const r=Object.assign({s:u},z);u+=z.len;return r;});}
+function stripBase(zs,H){
+  let k="",tint="",lab="",dims="";const L=zs.reduce((a,z)=>a+z.len,0);
+  zs.forEach(z=>{
+    if(z.a){const n=Math.max(2,Math.round(z.len/P.kerf)),st=z.len/n;tint+=rect(z.s,0,z.len,H,"arcz");
+      for(let i=1;i<n;i++)k+=`<line class="sc" x1="${q(z.s+i*st)}" x2="${q(z.s+i*st)}" y1="0" y2="${q(H)}"/>`;
+      lab+=`<text class="lbm" x="${q(z.s+z.len/2)}" y="${q(H+11.5)}" text-anchor="middle">rạch ${n-1}</text>`;}
+    else if(z.lab&&z.len>18)lab+=`<text class="zl" x="${q(z.s+z.len/2)}" y="${q(H/2)}" text-anchor="middle" opacity=".55">${z.lab}</text>`;
+    if(z.len>0.5)dims+=dimH(z.s,z.s+z.len,H+6,fm(z.len));
+  });
+  dims+=dimH(0,L,-6,"dài "+fm(L)+" mm")+dimV(-6,0,H,fm(H));
+  return {L,tint,k,lab,dims};
+}
+
+function buildTemplates(p,d){
+  const t=p.t,out=[];
+  /* B1 lid */
+  {const w=p.bW-2*t,h=p.bL-2*t,r=Math.max(0,p.bR-t);
+   const paws=[[PAW_IN-t,PAW_Y-t],[p.bW-PAW_IN-t,PAW_Y-t]];
+   const nk={x:w/2-17,y:p.headInset-t+p.hD/2-10};
+   let b=`<path class="bd" d="${rr(0,0,w,h,r)}"/>`;
+   paws.forEach(([x,y])=>{b+=circ(x,y,p.btnD/2+3.2,"dk")+pawToes(x,y,1,"dk");});
+   b+=rect(w/2-d.hFlatW/2,p.headInset-t,d.hFlatW,p.hD,"mk");
+   b+=`<text class="lbk" x="${q(w/2)}" y="${q(p.headInset-t+p.hD-3)}" text-anchor="middle">đáy đầu đặt ở đây</text>`;
+   paws.forEach(([x,y])=>{b+=circ(x,y,p.btnD/2,"hole");});
+   b+=rect(nk.x,nk.y,34,20,"hole",2);
+   b+=`<text class="lb" x="${q(w/2)}" y="${q(nk.y+11)}" text-anchor="middle">lỗ dây cổ</text>`;
+   b+=`<text class="lb" x="${q(paws[0][0])}" y="${q(paws[0][1]+p.btnD/2+7)}" text-anchor="middle">NÓI</text><text class="lb" x="${q(paws[1][0])}" y="${q(paws[1][1]+p.btnD/2+7)}" text-anchor="middle">DỪNG</text>`;
+   b+=`<text class="lbm" x="${q(w/2)}" y="-9" text-anchor="middle">▲ MÉP TRƯỚC</text>`;
+   b+=dimH(0,w,-4,fm(w))+dimV(-4,0,h,fm(h))+dimV(w+5,0,paws[0][1],fm(paws[0][1]))+dimH(0,paws[0][0],h+5,fm(paws[0][0]))+dimV(w+10,0,nk.y,fm(nk.y));
+   out.push(panel({title:"Nắp thân",qty:"× 1",w,h,m:16,body:b,note:`Nằm lọt trong dải thân, tì lên 4 khối đỡ. Bo góc R ${fm(r)}. Lỗ nút Ø${fm(p.btnD)}: dán nút dưới nắp trên một khối xốp sao cho nắp nút nhô lên ~2 mm, tô hồng làm đệm chân.`}));}
+
+  /* H1 face */
+  {const w=p.hW-2*t,h=p.hH-2*t,r=Math.max(0,p.hR-t),o=-t;const mg=moonGeom(d);
+   const win={x:d.win.x+o,y:d.win.y+o},cam={x:d.cam.x+o,y:d.cam.y+o},mic={x:d.mic.x+o,y:d.mic.y+o};
+   const defs=`<mask id="fMask" maskUnits="userSpaceOnUse" x="-50" y="-50" width="400" height="400"><rect x="-50" y="-50" width="400" height="400" fill="#fff"/><rect x="${q(d.win.x)}" y="${q(d.win.y)}" width="${p.winW}" height="${p.winH}" fill="#000"/></mask>`+
+     `<mask id="fMoon" maskUnits="userSpaceOnUse" x="-50" y="-50" width="400" height="400"><circle cx="${q(mg.c1.x)}" cy="${q(mg.c1.y)}" r="${q(mg.c1.r)}" fill="#fff"/><circle cx="${q(mg.c2.x)}" cy="${q(mg.c2.y)}" r="${q(mg.c2.r)}" fill="#000"/></mask>`+
+     `<clipPath id="fClip"><path d="${rr(t,t,w,h,r)}"/></clipPath>`;
+   let b=`<path class="bd" d="${rr(0,0,w,h,r)}"/>`;
+   b+=`<g transform="translate(${o} ${o})" clip-path="url(#fClip)">`+cheeks(p,d,"dp")+`<g mask="url(#fMask)">${maskShapes(p,d,"dk")}</g><path class="dk" d="${nosePath(d)}"/><circle class="dy" cx="${q(mg.c1.x)}" cy="${q(mg.c1.y)}" r="${q(mg.c1.r)}" mask="url(#fMoon)"/>`+
+     rect(d.pb.x,d.pb.y,d.pb.w,d.pb.h,"mk")+rect(d.mod.x,d.mod.y,d.mod.w,d.mod.h,"mk")+rect(d.pb.x+1,d.pb.y+1,10,10,"mkf")+rect(d.pb.x+d.pb.w-11,d.pb.y+1,10,10,"mkf")+`</g>`;
+   b+=rect(win.x,win.y,p.winW,p.winH,"hole",1.5)+circ(cam.x,cam.y,d.camD/2,"hole")+micDots({mic},"hole");
+   b+=`<text class="lbk" x="${q(d.pb.x+o+6)}" y="${q(d.pb.y+o+15)}">cột đỡ</text><text class="lbk" x="${q(d.pb.x+o+d.pb.w-6)}" y="${q(d.pb.y+o+15)}" text-anchor="end">cột đỡ</text>`;
+   b+=`<text class="lbk" x="${q(d.pb.x+o+2)}" y="${q(d.pb.y+o+d.pb.h-2)}">perfboard</text>`;
+   b+=`<text class="lbm" x="${q(w/2)}" y="-14.5" text-anchor="middle">MẶT NGOÀI</text>`;
+   b+=dimH(0,w,-4,fm(w))+dimH(0,cam.x,-9.5,"tâm camera "+fm(cam.x))+dimV(-4,0,h,fm(h));
+   b+=dimV(w+5,0,win.y,fm(win.y))+dimV(w+10.5,0,cam.y,"cam "+fm(cam.y))+dimV(w+16,win.y,win.y+p.winH,"cao "+fm(p.winH));
+   b+=dimH(0,win.x,h+5,fm(win.x))+dimH(win.x,win.x+p.winW,h+10.5,"cửa sổ "+fm(p.winW));
+   out.push(panel({title:"Mặt trước đầu",qty:"× 1",w,h,m:21,defs,body:b,note:`Lỗ camera Ø${fm(d.camD)} tâm (${fm(cam.x)}; ${fm(cam.y)}). Mic: 3 lỗ Ø2 quanh (${fm(mic.x)}; ${fm(mic.y)}). Toạ độ tính từ góc trên-trái tấm. Kính màn tì thẳng vào mặt sau cửa sổ; nét xanh là chỗ perfboard, mô-đun màn và 2 cột đỡ cao ${fm(p.standH)} mm.`}));}
+
+  /* H2 back */
+  {const w=p.hW-2*t,h=p.hH-2*t,r=Math.max(0,p.hR-t);
+   let b=`<path class="bd" d="${rr(0,0,w,h,r)}"/>`;
+   b+=rect(w/2-9,h-10,18,10.6,"hole",1.5)+circ(w/2,12,7,"hole");
+   [[14,14],[w-14,14],[14,h-14],[w-14,h-14]].forEach(([x,y])=>{b+=circ(x,y,5,"mkf");});
+   b+=`<text class="lb" x="${q(w/2)}" y="${q(h-13)}" text-anchor="middle">khe cáp USB-C</text><text class="lb" x="${q(w/2)}" y="24" text-anchor="middle">lỗ ngón tay</text><text class="lbk" x="${q(w/2)}" y="${q(h/2)}" text-anchor="middle">4 chấm nhám dính / nam châm</text>`;
+   b+=dimH(0,w,-4,fm(w))+dimV(-4,0,h,fm(h));
+   out.push(panel({title:"Mặt sau đầu (nắp tháo)",qty:"× 1",w,h,m:14,body:b,note:"Tì vào 4 khối chặn 10×10 dán bên trong dải đầu, giữ bằng nhám dính hoặc nam châm. Tháo ra là cắm được USB-C vào ESP32-S3 để nạp code."}));}
+
+  /* decal face */
+  {const mg=moonGeom(d);const x0=d.sx-p.winW/2-24,x1=Math.max(d.sx+p.winW/2+24,mg.c1.x+mg.c1.r+2),y0=Math.min(mg.c1.y-mg.c1.r-2,d.win.y-6),y1=d.ny+(d.mouth?13:8)+3;
+   const w=x1-x0,h=y1-y0;
+   const defs=`<mask id="dMask" maskUnits="userSpaceOnUse" x="-50" y="-50" width="400" height="400"><rect x="-50" y="-50" width="400" height="400" fill="#fff"/><rect x="${q(d.win.x)}" y="${q(d.win.y)}" width="${p.winW}" height="${p.winH}" fill="#000"/>${micDots(d,"").replace(/class=""/g,'fill="#000"')}</mask>`+
+     `<mask id="dMoon" maskUnits="userSpaceOnUse" x="-50" y="-50" width="400" height="400"><circle cx="${q(mg.c1.x)}" cy="${q(mg.c1.y)}" r="${q(mg.c1.r)}" fill="#fff"/><circle cx="${q(mg.c2.x)}" cy="${q(mg.c2.y)}" r="${q(mg.c2.r)}" fill="#000"/></mask>`;
+   let b=`<g transform="translate(${q(-x0)} ${q(-y0)})">`+rect(x0,y0,w,h,"",0,` style="fill:var(--board)"`)+
+     `<path class="mk" d="${rr(p.t,p.t,p.hW-2*p.t,p.hH-2*p.t,p.hR-p.t)}"/>`+cheeks(p,d,"sp")+`<g mask="url(#dMask)">${maskShapes(p,d,"sk")}</g><path class="sk" d="${nosePath(d)}"/>`+
+     (d.mouth?`<path d="${mouthPath(d)}" style="fill:none;stroke:var(--decal)" stroke-width="1.1" stroke-linecap="round"/>`:"")+
+     `<circle class="sy" cx="${q(mg.c1.x)}" cy="${q(mg.c1.y)}" r="${q(mg.c1.r)}" mask="url(#dMoon)"/>`+
+     circ(d.cam.x,d.cam.y,d.camD/2,"mk")+rect(d.win.x,d.win.y,p.winW,p.winH,"mk")+`</g>`;
+   b+=`<text class="lbm" x="0" y="-4">Đặt khớp nét xanh với cửa sổ và lỗ camera đã khoét</text>`;
+   out.push(panel({title:"Decal mặt",qty:"đen · vàng · hồng",w,h,m:10,defs,body:b,note:"Mảng đen bao quanh cửa sổ màn: khi màn ở chế độ mặt, nền đen của màn liền với decal thành hai mảng mắt gấu trúc. Trăng khuyết màu vàng ôm lấy lỗ camera. Má hồng tô bằng bút hoặc phấn."}));}
+
+  /* B2a body strip front */
+  {const H=p.bH,zs=zones([{len:d.bSide/2,lab:"hông"},{len:d.arcB,a:1},{len:d.bFront,lab:""},{len:d.arcB,a:1},{len:d.bSide/2,lab:"hông"}]);
+   const B=stripBase(zs,H),uc=B.L/2,a1=zs[1],a2=zs[3];
+   let b=rect(0,0,B.L,H,"bd")+rect(0,H-p.legH,B.L,p.legH,"dk")+rect(a1.s-4,0,a1.len+6,H-p.legH,"dk")+rect(a2.s-2,0,a2.len+6,H-p.legH,"dk")+B.tint+B.k;
+   d.grille.forEach(([x,y])=>{b+=circ(uc+x,p.grilleY+y,1.3,"hole");});
+   [-1,1].forEach(sg=>{b+=circ(uc+sg*p.sensSp/2,H-p.sensY,(p.sensD+1)/2,"hole");});
+   b+=circ(uc,p.grilleY,p.spkD/2,"mk")+rect(uc-22.5,H-p.sensY-10,45,20,"mk");
+   b+=`<text class="lbk" x="${q(uc)}" y="${q(p.grilleY-p.spkD/2-1.5)}" text-anchor="middle">loa dán mặt trong</text>`;
+   b+=B.lab+B.dims;
+   b+=`<text class="lbm" x="0" y="${q(H+16.5)}">← nối ở hông, sau bánh xe</text><text class="lbm" x="${q(B.L)}" y="${q(H+16.5)}" text-anchor="end">nối ở hông, sau bánh xe →</text>`;
+   out.push(panel({title:"Dải thân, nửa trước",qty:"× 1",wide:1,w:B.L,h:H,m:14,body:b+"",note:`Vẽ nhìn từ mặt ngoài. Hai lỗ mắt siêu âm Ø${fm(p.sensD+1)}, tâm cách nhau ${fm(p.sensSp)}, cách mép dưới ${fm(p.sensY)}. Lưới loa ${d.grille.length} lỗ Ø2,6, tâm cách mép trên ${fm(p.grilleY)}, nằm giữa dải. Rạch ${d.kB} đường ở mỗi góc (mặt trong). Mảng gạch đen: dải chân và hai cánh tay, dán decal khi dải còn phẳng.`}));}
+
+  /* B2b body strip rear */
+  {const H=p.bH,zs=zones([{len:d.bSide/2,lab:"hông"},{len:d.arcB,a:1},{len:d.bFront,lab:""},{len:d.arcB,a:1},{len:d.bSide/2,lab:"hông"}]);
+   const B=stripBase(zs,H),uc=B.L/2;
+   let b=rect(0,0,B.L,H,"bd")+rect(0,H-p.legH,B.L,p.legH,"dk")+B.tint+B.k;
+   b+=circ(uc,26,11,"mkf")+`<text class="lbk" x="${q(uc)}" y="27" text-anchor="middle">đuôi</text>`;
+   [-20,-14,14,20].forEach(x=>{b+=rect(uc+x-1.25,6,2.5,14,"hole",1);});
+   b+=rect(uc-21,H-17.5,14,9,"hole",2)+circ(uc-14,H-24,1.6,"hole")+rect(uc+9,H-15.5,10,5,"hole",1);
+   b+=`<text class="lb" x="${q(uc-14)}" y="${q(H-4)}" text-anchor="middle">sạc USB-C</text><text class="lb" x="${q(uc+14)}" y="${q(H-4)}" text-anchor="middle">công tắc</text><text class="lb" x="${q(uc+28)}" y="15" >thoát nhiệt</text>`;
+   b+=B.lab+B.dims+dimV(uc-24,H-13,H,"13","in");
+   out.push(panel({title:"Dải thân, nửa sau",qty:"× 1",wide:1,w:B.L,h:H,m:14,body:b,note:"Vẽ nhìn từ phía sau robot. Vị trí khe sạc, đèn sạc và công tắc chỉ là gợi ý: đặt TP4056 và công tắc vào thân trước, đánh dấu chỗ thật rồi mới khoét. Khe thoát nhiệt cho MT3608 và TP4056."}));}
+
+  /* H3 head strip */
+  {const H=p.hD,zs=zones([{len:d.hFlatW/2,lab:"đáy"},{len:d.arcH,a:1},{len:d.hFlatH,lab:"hông"},{len:d.arcH,a:1},{len:d.hFlatW/2,lab:"đỉnh"}]);
+   const B=stripBase(zs,H);const a=p.earAng*Math.PI/180;
+   const ue=zs[3].s+p.hR*Math.max(0,Math.min(Math.PI/2,Math.PI-a)),span=Math.min(p.earD*0.42,zs[3].len);
+   let b=rect(0,0,B.L,H,"bd")+B.tint+B.k;
+   b+=rect(ue-span/2,6,span,p.t,"mkf")+`<text class="lbk" x="${q(ue)}" y="${q(6+p.t+4.5)}" text-anchor="middle">tai</text>`;
+   b+=rect(0,H/2-10,15,20,"hole",0)+`<text class="lb" x="17" y="${q(H/2+1)}">nửa lỗ dây cổ</text>`;
+   b+=rect(B.L-24,H-p.t-11,10,10,"mkf")+`<text class="lbk" x="${q(B.L-26)}" y="${q(H-p.t-4)}" text-anchor="end">khối chặn mặt sau</text>`;
+   b+=`<text class="lbm" x="${q(B.L/2)}" y="-11" text-anchor="middle">▲ MÉP TRƯỚC (giáp mặt) · mép dưới là MÉP SAU</text>`;
+   b+=B.lab+B.dims+`<text class="lbm" x="0" y="${q(H+16.5)}">← giữa đáy: nối 2 dải</text><text class="lbm" x="${q(B.L)}" y="${q(H+16.5)}" text-anchor="end">giữa đỉnh: nối 2 dải →</text>`;
+   out.push(panel({title:"Dải đầu (trái và phải)",qty:"× 2, giống nhau",wide:1,w:B.L,h:H,m:16,body:b,note:`Hai dải ráp thành vòng quanh mặt trước, nối ở giữa đỉnh và giữa đáy bằng miếng lót 20 mm bên trong. Rạch ${d.kH} đường ở mỗi góc. Mép trước của dải bằng mặt trước đầu; mặt sau đầu lùi vào ${fm(p.t)} mm.`}));}
+
+  /* small parts */
+  {const er=p.earD/2,k=p.hubD/44,hr=p.hubD/2,gap=10;
+   const cx=[er,er*3+gap,er*4+gap*2+hr,er*4+gap*3+hr*3,er*4+gap*4+hr*4+11];
+   const h=Math.max(p.earD,p.hubD)+12,W=cx[4]+11,cy=h/2-4;
+   let defs="",b="";
+   [0,1].forEach(i=>{const sg=i?-1:1;
+     defs+=`<mask id="em${i}" maskUnits="userSpaceOnUse" x="-400" y="-400" width="800" height="800"><rect x="-400" y="-400" width="800" height="800" fill="#fff"/><path d="${rr(-d.earL.x,-d.earL.y,p.hW,p.hH,p.hR)}" fill="#000"/></mask><clipPath id="ec${i}"><circle cx="0" cy="0" r="${q(er)}"/></clipPath>`;
+     b+=`<g transform="translate(${q(cx[i])} ${q(cy)}) scale(${sg} 1)"><circle class="dk" cx="0" cy="0" r="${q(er)}" mask="url(#em${i})" style="stroke:var(--ink);stroke-width:.45"/><path d="${rr(-d.earL.x,-d.earL.y,p.hW,p.hH,p.hR)}" clip-path="url(#ec${i})" style="fill:var(--mat);stroke:var(--ink);stroke-width:.45"/></g>`;
+     b+=`<text class="lbm" x="${q(cx[i])}" y="${q(cy+er+6)}" text-anchor="middle">tai ${i?"phải":"trái"}</text>`;});
+   [2,3].forEach(i=>{b+=circ(cx[i],cy,hr,"dk",` style="stroke:var(--ink);stroke-width:.45"`)+`<ellipse class="dp" cx="${q(cx[i])}" cy="${q(cy+3.5*k)}" rx="${q(7.5*k)}" ry="${q(6.2*k)}"/>`+pawToes(cx[i],cy+1.5*k,k,"dp")+circ(cx[i],cy,1.5,"mk");
+     b+=`<text class="lbm" x="${q(cx[i])}" y="${q(cy+hr+6)}" text-anchor="middle">nắp bánh</text>`;});
+   b+=circ(cx[4],cy,11,"dk",` style="stroke:var(--ink);stroke-width:.45"`)+`<text class="lbm" x="${q(cx[4])}" y="${q(cy+17)}" text-anchor="middle">đuôi ×2 lớp</text>`;
+   b+=dimH(cx[0]-er,cx[0]+er,-4,"Ø"+fm(p.earD))+dimH(cx[2]-hr,cx[2]+hr,-4,"Ø"+fm(p.hubD))+dimH(cx[4]-11,cx[4]+11,-4,"Ø22");
+   out.push(panel({title:"Tai, nắp bánh, đuôi",qty:"bìa + decal đen",wide:1,w:W,h,m:10,defs,body:b,note:"Mép lõm dưới tai khớp đúng đường bo của đầu, dán bằng keo nến và ghim thêm 2 đoạn tăm tre. Nắp bánh dán bằng băng keo xốp lên mặt nan vàng (không chạm thân), đệm thịt tô hồng. Đuôi dán chồng 2 lớp lên lưng."}));}
+  return out.join("");
+}
+
+/* ---------- KERF DRAWING ---------- */
+function kerfDraw(p,d){
+  const s=4, T=p.t*s, sp=p.kerf*s, n=6;
+  let g=`<svg viewBox="0 0 360 190" role="img" aria-label="Mặt cắt rạch rãnh">`;
+  g+=`<text class="k-m" x="10" y="16">Mặt cắt ngang (phóng to ×4)</text>`;
+  const y0=34;
+  g+=`<rect x="10" y="${y0}" width="200" height="${T}" style="fill:var(--board);stroke:var(--ink)" stroke-width="1"/>`;
+  for(let i=1;i<=n;i++){const x=10+i*(200/(n+1));g+=`<path d="M${q(x-1.6)} ${y0}L${q(x)} ${q(y0+T*0.68)}L${q(x+1.6)} ${y0}Z" style="fill:var(--bg);stroke:var(--score)" stroke-width="1"/>`;}
+  g+=`<line x1="10" x2="210" y1="${q(y0+T)}" y2="${q(y0+T)}" style="stroke:var(--accent)" stroke-width="2.5"/>`;
+  g+=`<text class="k-t" x="218" y="${q(y0+5)}">mặt trong: rạch</text><text class="k-t" x="218" y="${q(y0+T+4)}">mặt ngoài: giữ nguyên</text>`;
+  g+=`<text class="k-m" x="${q(10+200/(n+1))}" y="${q(y0-5)}">cách ${fm(p.kerf)} mm</text>`;
+  // bent
+  const cx=70,cy=176,Ro=96,Ri=Ro-T;
+  g+=`<path d="M${cx} ${cy-Ro}A${Ro} ${Ro} 0 0 1 ${cx+Ro} ${cy}L${cx+Ri} ${cy}A${Ri} ${Ri} 0 0 0 ${cx} ${cy-Ri}Z" style="fill:var(--board);stroke:var(--ink)" stroke-width="1" transform="translate(0 0) scale(1)"/>`;
+  const m=Math.max(2,Math.round(d.arcB/p.kerf));
+  for(let i=1;i<m;i++){const a=-Math.PI/2+i*(Math.PI/2)/m;g+=`<line x1="${q(cx+Math.cos(a)*Ri)}" y1="${q(cy+Math.sin(a)*Ri)}" x2="${q(cx+Math.cos(a)*(Ri+T*.68))}" y2="${q(cy+Math.sin(a)*(Ri+T*.68))}" style="stroke:var(--score)" stroke-width="1"/>`;}
+  g+=`<path d="M${cx} ${cy-Ro}A${Ro} ${Ro} 0 0 1 ${cx+Ro} ${cy}" style="fill:none;stroke:var(--accent)" stroke-width="2.5"/>`;
+  g+=`<text class="k-t" x="${cx+Ro+10}" y="${cy-40}">uốn 90°: rãnh khép lại,</text><text class="k-t" x="${cx+Ro+10}" y="${cy-28}">mặt ngoài cong đều</text>`;
+  g+=`</svg>`;
+  return g;
+}
+
+/* ---------- CHECKS ---------- */
+function checks(p,d){
+  const t=p.t,out=[];
+  const inner=[t,t,p.hW-2*t,p.hH-2*t,Math.max(0,p.hR-t)];
+  if(!rectIn(d.pb,...inner))out.push(["w","Perfboard chạm vào góc bo hoặc vách đầu. Tăng Rộng/Cao đầu, giảm bán kính bo, hoặc giảm khe hở phía trên."]);
+  if(!rectIn(d.mod,...inner))out.push(["w","Mô-đun màn (viền đỏ) không lọt trong đầu. Kiểm tra lại số đo mô-đun hoặc tăng Rộng đầu."]);
+  if(!inRR(d.cam.x,d.cam.y,...inner))out.push(["w","Lỗ camera nằm ngoài mặt đầu. Kiểm tra số đo vị trí ống kính."]);
+  if(d.camD>24)out.push(["w",`Lỗ camera phải rộng Ø${fm(d.camD)} mm vì ống kính lùi sâu. Kê camera bằng băng keo xốp cho ống kính sát mặt sau tấm mặt (cáp dẹt đủ mềm để làm vậy).`]);
+  if(p.bW>p.wheelGap-6)out.push(["w",`Thân rộng ${fm(p.bW)} mm, khe giữa 2 bánh ${fm(p.wheelGap)} mm. Chừa ít nhất 3 mm mỗi bên để bánh không cọ vỏ.`]);
+  if(2*p.bR>p.bW||2*p.bR>p.bL)out.push(["w","Bán kính bo thân lớn hơn nửa chiều rộng/dài. Giảm bán kính bo."]);
+  if(2*p.hR>p.hW||2*p.hR>p.hH)out.push(["w","Bán kính bo đầu lớn hơn nửa chiều rộng/cao. Giảm bán kính bo."]);
+  if(d.bFront<Math.max(p.sensSp+p.sensD+4,p.spkD))out.push(["w",`Mặt phẳng phía trước thân chỉ còn ${fm(d.bFront)} mm, cần ${fm(Math.max(p.sensSp+p.sensD+4,p.spkD))} mm cho cảm biến và loa. Giảm bán kính bo hoặc tăng Rộng thân.`]);
+  if(p.grilleY+p.spkD/2>p.bH-p.sensY-p.sensD/2-2)out.push(["w","Lưới loa đè lên mắt siêu âm. Đưa tâm lưới loa lên cao hoặc tăng chiều cao thân."]);
+  if(p.legH<p.sensY+p.sensD/2+2)out.push(["i","Dải chân đen chưa phủ hết mắt siêu âm. Không sai, chỉ kém gọn hơn."]);
+  if(p.grilleY+p.spkD/2-3>p.bH-p.legH)out.push(["i","Lưới loa lấn xuống dải chân đen."]);
+  if(PAW_Y+p.btnD/2+1.5>p.headInset)out.push(["w","Bàn chân (nút bấm) bị đầu che. Tăng khoảng đầu lùi sau mép trước."]);
+  if(p.headInset+p.hD>p.bL-t)out.push(["w","Đầu thò ra sau thân. Giảm độ sâu đầu hoặc khoảng lùi."]);
+  if(d.hFlatW<40)out.push(["i","Phần đáy phẳng của đầu hẹp (<40 mm), đầu đứng kém vững. Giảm bán kính bo đầu."]);
+  if(d.ny+8>p.hH-t-1)out.push(["i","Không còn chỗ dưới màn cho mũi. Tăng Cao đầu hoặc bỏ mũi."]);
+  if(Math.max(d.bHalf,d.hHalf)+30>281)out.push(["i","Dải dài hơn khổ A4 ngang. In thành 2 trang rồi nối khuôn bằng băng keo."]);
+  const mx=p.camX>p.pbW/2;
+  out.push(["i",`Camera nằm ${mx?"lệch phải":"lệch trái"} ${fm(Math.abs(d.cam.x-d.sx))} mm so với tâm mặt. Kẹp tóc trăng khuyết được thiết kế cho chỗ lệch này.`]);
+  if(!out.some(o=>o[0]==="w"))out.unshift(["ok","Các khối lắp vừa nhau với số đo hiện tại."]);
+  return out.map(([c,m])=>`<div class="check ${c}"><b>${c==="w"?"Sửa":c==="ok"?"Ổn":"Lưu ý"}</b><span>${m}</span></div>`).join("");
+}
+
+/* ---------- MAP + STEPS ---------- */
+function mapRows(p,d){
+  const rows=[
+   ["Màn TFT 2.4″","Hai mảng đen quanh mắt: nền đen của màn liền với decal đen",`cửa sổ ${fm(p.winW)}×${fm(p.winH)}`],
+   ["Camera OV3660","Kẹp tóc trăng khuyết trên trán",`lỗ Ø${fm(d.camD)}`],
+   ["Mic INMP441","Ba chấm nhỏ trên trán, ngay trên mảng mắt","3 lỗ Ø2"],
+   ["Loa 40 mm","Bụng trắng có lưới lỗ tròn",`${d.grille.length} lỗ Ø2,6`],
+   ["HC-SR04","Nằm trong dải chân đen",`2 lỗ Ø${fm(p.sensD+1)}`],
+   ["2 nút bấm","Hai bàn chân trước trên “đùi”: NÓI và DỪNG",`2 lỗ Ø${fm(p.btnD)}`],
+   ["Bánh xe","Bàn chân sau: nắp bánh có đệm thịt hồng","không"],
+   ["Pin, TP4056, công tắc","Lưng và đuôi; cổng sạc, công tắc nằm trong dải chân sau","khe USB-C, khe công tắc"],
+   ["ESP32-S3 (USB-C)","Nắp lưng đầu tháo được","khe cáp ở đáy"],
+   ["Dây đầu ↔ thân","Cổ ẩn dưới đầu","lỗ 34×20 ở nắp thân"]];
+  return rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="mono">${r[2]}</td></tr>`).join("");
+}
+function steps(p,d){
+  const S=[
+   ["Đo và sửa số","Đo lại các ô viền cam ở mục Số đo trên robot thật. Xem phần cảnh báo, sửa cho hết dòng “Sửa”."],
+   ["In khuôn hoặc kẻ thẳng lên bìa","In 1:1 rồi đo thước 50 mm. Dán khuôn lên bìa bằng băng keo giấy. Không có máy in thì kẻ theo các số trên khuôn."],
+   ["Cắt tấm phẳng và khoét lỗ",`Nắp thân, mặt trước và mặt sau đầu, 2 tai, 2 nắp bánh, 2 lớp đuôi. Khoét cửa sổ màn, lỗ camera Ø${fm(d.camD)}, lỗ mic, lỗ nút.`],
+   ["Cắt 4 dải và rạch góc",`2 dải thân cao ${fm(p.bH)}, 2 dải đầu rộng ${fm(p.hD)}. Khoét lỗ trước, rạch sau: ${d.kB} đường mỗi góc thân, ${d.kH} đường mỗi góc đầu, mặt trong.`],
+   ["Dán decal khi còn phẳng","Dải chân và hai tay trên dải thân, dải chân trên dải sau, mảng mắt, mũi và trăng trên mặt đầu, decal đen hai mặt tai, nắp bánh, đuôi."],
+   ["Ráp thử khô","Quấn dải quanh mặt đầu và quanh khung xe, giữ bằng băng keo giấy. Kiểm tra cửa sổ khớp màn, lỗ khớp camera và cảm biến rồi mới dán keo."],
+   ["Dựng đầu",`Dán 2 cột đỡ cao ${fm(p.standH)} mm và một kệ đỡ dưới đáy perfboard. Dán dải đầu quanh mặt trước bằng keo nến từng đoạn, nối ở đỉnh và đáy bằng miếng lót. Dán 4 khối chặn cho mặt sau, gắn tai và ghim tăm tre.`],
+   ["Gắn mạch đầu","Đặt kính màn tì vào cửa sổ, perfboard tì vào 2 cột, giữ bằng băng keo xốp 2 mặt. Kê camera cho ống kính sát lỗ. Đậy mặt sau bằng nhám dính."],
+   ["Dựng thân","Dán 4 khối chân lên mica bằng băng keo 2 mặt theo đường bao thân. Quấn 2 nửa dải, nối ở hông sau bánh xe. Dán loa và HC-SR04 sát mặt trong, dán 4 khối đỡ nắp."],
+   ["Ghép đầu lên nắp thân","Luồn dây qua lỗ cổ, dán đáy đầu lên nắp. Đặt nắp lên thân, giữ bằng nhám dính để mở ra thay pin được."],
+   ["Chạy thử","Chụp thử ảnh camera xem viền lỗ có lọt vào khung không, nói thử vào mic, bật loa to xem vỏ có rung rè không, cho xe chạy xem bánh có cọ vỏ không."]];
+  return S.map(s=>`<li><div><b>${s[0]}</b><p>${s[1]}</p></div></li>`).join("");
+}
+
+/* ---------- FIELDS ---------- */
+function buildFields(){
+  $("fields").innerHTML=GROUPS.map(G=>`<fieldset><legend>${G.g}</legend>`+G.items.map(([k,lab,hint,est])=>
+    `<div class="f${est?" est":""}"><label for="f-${k}">${lab}${est?'<span class="tag">đo lại</span>':""}${hint?`<small>${hint}</small>`:""}</label><span class="in"><input id="f-${k}" type="number" step="0.5" inputmode="decimal" value="${P[k]}" data-k="${k}">${k==="earAng"?"°":"mm"}</span></div>`).join("")+`</fieldset>`).join("");
+  $("fields").addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;const v=parseFloat(String(e.target.value).replace(",","."));if(!isFinite(v))return;P[k]=v;save();schedule();});
+}
+function legend(){
+  const sw=(inner)=>`<svg viewBox="0 0 34 14" aria-hidden="true">${inner}</svg>`;
+  $("legend").innerHTML=[
+   [sw(`<rect x="1" y="2" width="32" height="10" style="fill:var(--board);stroke:var(--ink)" stroke-width="1"/>`),"đường cắt đứt"],
+   [sw(`<rect x="1" y="2" width="32" height="10" style="fill:var(--board)"/><line x1="10" x2="10" y1="2" y2="12" style="stroke:var(--score)" stroke-width="1.2" stroke-dasharray="2 1.5"/><line x1="17" x2="17" y1="2" y2="12" style="stroke:var(--score)" stroke-width="1.2" stroke-dasharray="2 1.5"/><line x1="24" x2="24" y1="2" y2="12" style="stroke:var(--score)" stroke-width="1.2" stroke-dasharray="2 1.5"/>`),"rạch rãnh mặt trong"],
+   [sw(`<rect x="1" y="2" width="32" height="10" style="fill:var(--board)"/><circle cx="17" cy="7" r="4" style="fill:var(--mat);stroke:var(--ink)" stroke-width="1"/>`),"khoét lỗ"],
+   [sw(`<rect x="1" y="2" width="10" height="10" fill="url(#hK)"/><rect x="12" y="2" width="10" height="10" fill="url(#hY)"/><rect x="23" y="2" width="10" height="10" fill="url(#hP)"/>`),"decal đen · vàng · hồng"],
+   [sw(`<rect x="2" y="2" width="30" height="10" style="fill:none;stroke:var(--mark)" stroke-width="1.2" stroke-dasharray="3 2"/>`),"vị trí gắn, không cắt"]
+  ].map(([s,t])=>`<span>${s}${t}</span>`).join("");
+}
+
+/* ---------- RENDER ---------- */
+let raf=0;function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
+function render(){
+  const d=derive(P);
+  $("fv").innerHTML=frontView(P,d);
+  $("sv").innerHTML=sideView(P,d);
+  $("chips").innerHTML=[`cao ${fm(d.totalH/10)} cm`,`rộng ${fm(d.totalW/10)} cm kể cả bánh`,`7 khuôn cắt`,`~60k tiền phụ kiện`].map(c=>`<span class="chip">${c}</span>`).join("");
+  $("maptbl").innerHTML=mapRows(P,d);
+  $("checks").innerHTML=checks(P,d);
+  $("tpls").innerHTML=buildTemplates(P,d);
+  $("kerfdraw").innerHTML=kerfDraw(P,d);
+  $("kerfstats").innerHTML=`<div><span>Mỗi góc thân (R ${fm(P.bR)})</span><b class="big">${d.kB}</b><span>đường, vùng dài ${fm(d.arcB)} mm</span></div><div><span>Mỗi góc đầu (R ${fm(P.hR)})</span><b class="big">${d.kH}</b><span>đường, vùng dài ${fm(d.arcH)} mm</span></div>`;
+  const t=P.t,area=(P.bW-2*t)*(P.bL-2*t)+2*d.bHalf*P.bH+2*(P.hW-2*t)*(P.hH-2*t)+2*d.hHalf*P.hD+2*Math.PI*(P.earD/2)**2+2*Math.PI*(P.hubD/2)**2+2*Math.PI*121+14*15*15;
+  $("area").textContent=`Tổng diện tích bìa khoảng ${fm(area/100)} cm², bằng ${fm(area/62370)} tờ A4. Cộng thêm ~30% hao hụt khi xếp khuôn.`;
+  $("steps").innerHTML=steps(P,d);
+}
+
+buildFields();legend();render();
+$("reset").addEventListener("click",()=>{P=Object.assign({},DEF);save();document.querySelectorAll("#fields input").forEach(i=>{i.value=P[i.dataset.k];});render();});
+$("xray").addEventListener("click",e=>{const on=e.currentTarget.getAttribute("aria-pressed")!=="true";e.currentTarget.setAttribute("aria-pressed",String(on));$("stage").classList.toggle("xray",on);});
+$("real").addEventListener("click",e=>{const on=e.currentTarget.getAttribute("aria-pressed")!=="true";e.currentTarget.setAttribute("aria-pressed",String(on));document.body.classList.toggle("real",on);});
+})();
+</script>
+</body>
+</html>
